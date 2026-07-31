@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+
+# EF Core
+*.mdf
+*.ldf
+
+# Node / React (if frontend lives inside this repo)
+node_modules/
+dist/
+build/
+
+# Environment secrets
+appsettings.Development.json
+.env
+*.env.local
