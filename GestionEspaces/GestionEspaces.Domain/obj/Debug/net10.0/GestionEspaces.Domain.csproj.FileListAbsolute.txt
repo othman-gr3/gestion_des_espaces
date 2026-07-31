@@ -1,0 +1,11 @@
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\bin\Debug\net10.0\GestionEspaces.Domain.deps.json
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\bin\Debug\net10.0\GestionEspaces.Domain.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\bin\Debug\net10.0\GestionEspaces.Domain.pdb
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.AssemblyInfoInputs.cache
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.AssemblyInfo.cs
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.csproj.CoreCompileInputs.cache
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\refint\GestionEspaces.Domain.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\GestionEspaces.Domain.pdb
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Domain\obj\Debug\net10.0\ref\GestionEspaces.Domain.dll

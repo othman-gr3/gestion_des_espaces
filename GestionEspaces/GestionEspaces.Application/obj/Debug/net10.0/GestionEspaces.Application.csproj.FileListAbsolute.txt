@@ -1,0 +1,15 @@
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\bin\Debug\net10.0\GestionEspaces.Application.deps.json
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\bin\Debug\net10.0\GestionEspaces.Application.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\bin\Debug\net10.0\GestionEspaces.Application.pdb
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\bin\Debug\net10.0\GestionEspaces.Domain.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\bin\Debug\net10.0\GestionEspaces.Domain.pdb
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.csproj.AssemblyReference.cache
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.AssemblyInfoInputs.cache
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.AssemblyInfo.cs
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.csproj.CoreCompileInputs.cache
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionE.3B33F3E0.Up2Date
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\refint\GestionEspaces.Application.dll
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\GestionEspaces.Application.pdb
+C:\Users\lamda\Downloads\GestionEspaces\GestionEspaces\GestionEspaces.Application\obj\Debug\net10.0\ref\GestionEspaces.Application.dll

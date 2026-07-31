@@ -1,0 +1,187 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.domain\\entities\\actif.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|solutionrelative:gestionespaces.domain\\entities\\actif.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.domain\\entities\\agent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|solutionrelative:gestionespaces.domain\\entities\\agent.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.domain\\entities\\bureau.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|solutionrelative:gestionespaces.domain\\entities\\bureau.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.domain\\entities\\batiment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D195B4EB-C0B6-48E6-B163-146EF86E4653}|GestionEspaces.Domain\\GestionEspaces.Domain.csproj|solutionrelative:gestionespaces.domain\\entities\\batiment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7F48DD6E-3329-4CDB-854B-AB5A476D23C2}|GestionEspaces.Api\\GestionEspaces.Api.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.api\\gestionespaces.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{7F48DD6E-3329-4CDB-854B-AB5A476D23C2}|GestionEspaces.Api\\GestionEspaces.Api.csproj|solutionrelative:gestionespaces.api\\gestionespaces.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\lamda\\Downloads\\GestionEspaces\\global.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\dotnet\\sdk\\8.0.423\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.TargetFrameworkInference.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\dotnet\\sdk\\10.0.302\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.DefaultItems.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E17FC96A-EF15-495E-B8E2-E9755991878F}|GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.infrastructure\\gestionespaces.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E17FC96A-EF15-495E-B8E2-E9755991878F}|GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj|solutionrelative:gestionespaces.infrastructure\\gestionespaces.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5FC0380A-C20D-4E1E-BF4A-D128C6B842D0}|GestionEspaces.Application\\GestionEspaces.Application.csproj|c:\\users\\lamda\\downloads\\gestionespaces\\gestionespaces\\gestionespaces.application\\gestionespaces.application.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{5FC0380A-C20D-4E1E-BF4A-D128C6B842D0}|GestionEspaces.Application\\GestionEspaces.Application.csproj|solutionrelative:gestionespaces.application\\gestionespaces.application.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Actif.cs",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Actif.cs",
+              "RelativeDocumentMoniker": "GestionEspaces.Domain\\Entities\\Actif.cs",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Actif.cs*",
+              "RelativeToolTip": "GestionEspaces.Domain\\Entities\\Actif.cs*",
+              "ViewState": "AgIAABQAAAAAAAAAAAAQwBYAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:30:22.856Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Agent.cs",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Agent.cs",
+              "RelativeDocumentMoniker": "GestionEspaces.Domain\\Entities\\Agent.cs",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Agent.cs*",
+              "RelativeToolTip": "GestionEspaces.Domain\\Entities\\Agent.cs*",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA9wCwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:30:14.837Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Bureau.cs",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Bureau.cs",
+              "RelativeDocumentMoniker": "GestionEspaces.Domain\\Entities\\Bureau.cs",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Bureau.cs*",
+              "RelativeToolTip": "GestionEspaces.Domain\\Entities\\Bureau.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:30:03.983Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Batiment.cs",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Batiment.cs",
+              "RelativeDocumentMoniker": "GestionEspaces.Domain\\Entities\\Batiment.cs",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Domain\\Entities\\Batiment.cs*",
+              "RelativeToolTip": "GestionEspaces.Domain\\Entities\\Batiment.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:29:54.725Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "global.json",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\global.json",
+              "RelativeDocumentMoniker": "..\\global.json",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\global.json",
+              "RelativeToolTip": "..\\global.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-07-29T14:17:37.041Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GestionEspaces.Api",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Api\\GestionEspaces.Api.csproj",
+              "RelativeDocumentMoniker": "GestionEspaces.Api\\GestionEspaces.Api.csproj",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Api\\GestionEspaces.Api.csproj",
+              "RelativeToolTip": "GestionEspaces.Api\\GestionEspaces.Api.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-07-29T14:16:03.172Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Microsoft.NET.TargetFrameworkInference.targets",
+              "DocumentMoniker": "C:\\Program Files\\dotnet\\sdk\\8.0.423\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.TargetFrameworkInference.targets",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\8.0.423\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.TargetFrameworkInference.targets",
+              "ToolTip": "C:\\Program Files\\dotnet\\sdk\\8.0.423\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.TargetFrameworkInference.targets",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\8.0.423\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.TargetFrameworkInference.targets",
+              "ViewState": "AgIAAJEAAAAAAAAAAADgv6EAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-07-29T14:15:55.151Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Microsoft.NET.Sdk.DefaultItems.targets",
+              "DocumentMoniker": "C:\\Program Files\\dotnet\\sdk\\10.0.302\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.DefaultItems.targets",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\10.0.302\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.DefaultItems.targets",
+              "ToolTip": "C:\\Program Files\\dotnet\\sdk\\10.0.302\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.DefaultItems.targets",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\10.0.302\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.DefaultItems.targets",
+              "ViewState": "AgIAAHgAAAAAAAAAAADgv4wAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-07-29T14:12:38.71Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "GestionEspaces.Infrastructure",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj",
+              "RelativeToolTip": "GestionEspaces.Infrastructure\\GestionEspaces.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-07-29T14:10:59.408Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "GestionEspaces.Application",
+              "DocumentMoniker": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Application\\GestionEspaces.Application.csproj",
+              "RelativeDocumentMoniker": "GestionEspaces.Application\\GestionEspaces.Application.csproj",
+              "ToolTip": "C:\\Users\\lamda\\Downloads\\GestionEspaces\\GestionEspaces\\GestionEspaces.Application\\GestionEspaces.Application.csproj",
+              "RelativeToolTip": "GestionEspaces.Application\\GestionEspaces.Application.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-07-29T14:10:17.122Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

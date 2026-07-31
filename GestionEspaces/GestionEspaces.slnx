@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="GestionEspaces.Api/GestionEspaces.Api.csproj" />
+  <Project Path="GestionEspaces.Application/GestionEspaces.Application.csproj" />
+  <Project Path="GestionEspaces.Domain/GestionEspaces.Domain.csproj" />
+  <Project Path="GestionEspaces.Infrastructure/GestionEspaces.Infrastructure.csproj" />
+  <Project Path="GestionEspaces.Tests/GestionEspaces.Tests.csproj" />
+  <Project Path="GestionEspaces.IntegrationTests/GestionEspaces.IntegrationTests.csproj" />
+</Solution>
