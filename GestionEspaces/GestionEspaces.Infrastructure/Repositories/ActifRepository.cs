@@ -66,6 +66,11 @@ public sealed class ActifRepository : IActifRepository
         _dbContext.Actifs.Remove(actif);
     }
 
+    public void SetOriginalVersion(Actif actif, byte[] version)
+    {
+        _dbContext.Entry(actif).Property(a => a.Version).OriginalValue = version;
+    }
+
     private IQueryable<Actif> BuildQuery(string? searchText, EtatActif? etat)
     {
         var query = _dbContext.Actifs.AsQueryable();

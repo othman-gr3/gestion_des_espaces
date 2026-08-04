@@ -65,6 +65,16 @@ public sealed class ActifUseCases
             return Result<ActifDto>.Failure(validation.Errors.Select(e => new ErrorDetail("ValidationError", e.ErrorMessage, e.PropertyName)));
         }
 
+        byte[] tokenBytes;
+        try
+        {
+            tokenBytes = Convert.FromBase64String(request.ConcurrencyToken);
+        }
+        catch (FormatException)
+        {
+            return Result<ActifDto>.Failure(new ErrorDetail("ValidationError", "Le jeton de concurrence est invalide.", nameof(request.ConcurrencyToken)));
+        }
+
         var actif = await _actifRepository.GetByIdAsync(idActif, cancellationToken);
         if (actif is null)
         {
@@ -76,6 +86,8 @@ public sealed class ActifUseCases
         {
             return Result<ActifDto>.Failure(new ErrorDetail("DuplicateNumeroSerie", $"Le numéro de série '{request.NumeroSerie}' existe déjà."));
         }
+
+        _actifRepository.SetOriginalVersion(actif, tokenBytes);
 
         actif.MettreAJour(
             request.Nom,

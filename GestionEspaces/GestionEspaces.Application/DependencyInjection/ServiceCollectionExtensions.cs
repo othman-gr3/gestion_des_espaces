@@ -16,13 +16,17 @@ public static class ServiceCollectionExtensions
     {
         services.AddValidatorsFromAssemblyContaining<CreateAgentRequestValidator>();
 
-        services.AddScoped<CreateAgentUseCase>();
+        services.AddScoped<AgentUseCases>();
         services.AddScoped<AssignAgentToOfficeUseCase>();
         services.AddScoped<AssignAssetToAgentUseCase>();
+        services.AddScoped<CloseAffectationPosteUseCase>();
+        services.AddScoped<CloseAffectationActifUseCase>();
+        services.AddScoped<QueryAffectationsUseCase>();
         services.AddScoped<SiteUseCases>();
         services.AddScoped<BatimentUseCases>();
         services.AddScoped<BureauUseCases>();
         services.AddScoped<ActifUseCases>();
+        services.AddScoped<ReservationUseCases>();
 
         return services;
     }

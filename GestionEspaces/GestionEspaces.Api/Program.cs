@@ -1,5 +1,6 @@
 using GestionEspaces.Application.DependencyInjection;
 using GestionEspaces.Infrastructure.DependencyInjection;
+using GestionEspaces.Infrastructure.Persistence;
 using GestionEspaces.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -39,6 +40,16 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("Gestion", policy =>
         policy.RequireRole("Gestionnaire"));
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddControllers();
@@ -83,10 +94,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<GestionEspacesDbContext>();
+    await DbInitializer.SeedAsync(context);
+}
 
 app.Run();
 

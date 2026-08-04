@@ -20,4 +20,9 @@ public interface IActifRepository
     void Update(Actif actif);
 
     void Remove(Actif actif);
+
+    /// <summary>
+    /// Sets the expected original rowversion so EF Core can detect concurrent modifications.
+    /// </summary>
+    void SetOriginalVersion(Actif actif, byte[] version);
 }

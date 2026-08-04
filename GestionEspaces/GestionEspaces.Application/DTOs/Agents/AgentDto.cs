@@ -5,6 +5,7 @@ namespace GestionEspaces.Application.DTOs.Agents;
 /// </summary>
 public sealed record AgentDto(
     int IdAgent,
+    string? ConcurrencyToken,
     string Nom,
     string Prenom,
     string Matricule,

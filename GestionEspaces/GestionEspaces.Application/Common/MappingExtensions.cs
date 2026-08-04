@@ -4,6 +4,7 @@ using GestionEspaces.Application.DTOs.Actifs;
 using GestionEspaces.Application.DTOs.Batiments;
 using GestionEspaces.Application.DTOs.Bureaux;
 using GestionEspaces.Application.DTOs.Sites;
+using GestionEspaces.Application.DTOs.Reservations;
 using GestionEspaces.Domain.Entities;
 
 namespace GestionEspaces.Application.Common;
@@ -15,6 +16,7 @@ public static class MappingExtensions
 {
     public static AgentDto ToDto(this Agent agent) => new(
         agent.IdAgent,
+        agent.Version.Length > 0 ? Convert.ToBase64String(agent.Version) : null,
         agent.Nom,
         agent.Prenom,
         agent.Matricule,
@@ -32,7 +34,21 @@ public static class MappingExtensions
         affectation.DateAffectation,
         affectation.DateFin);
 
+    public static AffectationPosteDto ToDto(this AffectationPoste affectation) => new(
+        affectation.IdAffectationPoste,
+        affectation.IdAgent,
+        affectation.IdBureau,
+        affectation.DateAffectation,
+        affectation.DateFin);
+
     public static AssignmentUseCaseResult ToResult(this AffectationActif affectation) => new(
+        affectation.IdAffectationActif,
+        affectation.IdAgent,
+        affectation.IdActif,
+        affectation.DateAffectation,
+        affectation.DateFin);
+
+    public static AffectationActifDto ToDto(this AffectationActif affectation) => new(
         affectation.IdAffectationActif,
         affectation.IdAgent,
         affectation.IdActif,
@@ -82,4 +98,14 @@ public static class MappingExtensions
         actif.DateAchat,
         actif.Etat,
         actif.Image);
+
+    public static ReservationDto ToDto(this Reservation r) => new(
+        r.IdReservation,
+        r.Version.Length > 0 ? Convert.ToBase64String(r.Version) : null,
+        r.IdBureau,
+        r.IdAgent,
+        r.DateDebut,
+        r.DateFin,
+        r.Statut.ToString(),
+        r.Motif);
 }

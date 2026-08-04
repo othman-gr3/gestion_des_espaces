@@ -29,6 +29,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBatimentRepository, BatimentRepository>();
         services.AddScoped<IBureauRepository, BureauRepository>();
         services.AddScoped<IActifRepository, ActifRepository>();
+        services.AddScoped<IAffectationRepository, AffectationRepository>();
+        services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;

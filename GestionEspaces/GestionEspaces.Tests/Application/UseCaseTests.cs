@@ -127,6 +127,42 @@ public class UseCaseTests
             return Task.FromResult(_agents.Values.Any(agent => agent.Matricule == matricule));
         }
 
+        public Task<bool> ExistsByMatriculeAsync(string matricule, int? excludingIdAgent, CancellationToken cancellationToken)
+        {
+            var exists = _agents.Values.Any(a =>
+                a.Matricule == matricule && (!excludingIdAgent.HasValue || a.IdAgent != excludingIdAgent.Value));
+            return Task.FromResult(exists);
+        }
+
+        public Task<IReadOnlyList<Agent>> SearchAsync(string? searchText, int pageNumber, int pageSize, CancellationToken cancellationToken)
+        {
+            IEnumerable<Agent> query = _agents.Values;
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var f = searchText.Trim();
+                query = query.Where(a =>
+                    a.Nom.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    a.Prenom.Contains(f, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var paged = query.OrderBy(a => a.Nom).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToArray();
+            return Task.FromResult<IReadOnlyList<Agent>>(paged);
+        }
+
+        public Task<int> CountAsync(string? searchText, CancellationToken cancellationToken)
+        {
+            IEnumerable<Agent> query = _agents.Values;
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var f = searchText.Trim();
+                query = query.Where(a =>
+                    a.Nom.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    a.Prenom.Contains(f, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return Task.FromResult(query.Count());
+        }
+
         public Task AddAsync(Agent agent, CancellationToken cancellationToken)
         {
             _agents[agent.IdAgent] = agent;
@@ -136,6 +172,16 @@ public class UseCaseTests
         public void Update(Agent agent)
         {
             _agents[agent.IdAgent] = agent;
+        }
+
+        public void Remove(Agent agent)
+        {
+            _agents.Remove(agent.IdAgent);
+        }
+
+        public void SetOriginalVersion(Agent agent, byte[] version)
+        {
+            // No-op for in-memory fakes — concurrency is not tested at this layer.
         }
     }
 
@@ -300,6 +346,11 @@ public class UseCaseTests
         public void Remove(Actif actif)
         {
             _actifs.Remove(actif.IdActif);
+        }
+
+        public void SetOriginalVersion(Actif actif, byte[] version)
+        {
+            // No-op for in-memory fakes — concurrency is not tested at this layer.
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using GestionEspaces.Domain.Exceptions;
+using GestionEspaces.Domain.Exceptions;
 
 namespace GestionEspaces.Domain.Entities;
 
@@ -27,6 +27,28 @@ public class Agent
     public Agent(string nom, string prenom, string matricule, string? email,
                  string? telephone, string? fonction, string? departement,
                  DateTime? dateEmbauche, string? image)
+    {
+        if (string.IsNullOrWhiteSpace(nom))
+            throw new ArgumentException("Le nom est obligatoire.", nameof(nom));
+        if (string.IsNullOrWhiteSpace(prenom))
+            throw new ArgumentException("Le prénom est obligatoire.", nameof(prenom));
+        if (string.IsNullOrWhiteSpace(matricule))
+            throw new ArgumentException("Le matricule est obligatoire.", nameof(matricule));
+
+        Nom = nom;
+        Prenom = prenom;
+        Matricule = matricule;
+        Email = email;
+        Telephone = telephone;
+        Fonction = fonction;
+        Departement = departement;
+        DateEmbauche = dateEmbauche;
+        Image = image;
+    }
+
+    public void MettreAJour(string nom, string prenom, string matricule, string? email,
+        string? telephone, string? fonction, string? departement,
+        DateTime? dateEmbauche, string? image)
     {
         if (string.IsNullOrWhiteSpace(nom))
             throw new ArgumentException("Le nom est obligatoire.", nameof(nom));

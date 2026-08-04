@@ -63,6 +63,12 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.HasKey("IdActif");
 
                     b.HasIndex("NumeroSerie")
@@ -182,6 +188,12 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.HasKey("IdAgent");
 
                     b.HasIndex("Matricule")
@@ -215,6 +227,12 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
 
                     b.Property<float>("Superficie")
                         .HasColumnType("real");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.HasKey("IdBatiment");
 
@@ -259,12 +277,62 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.HasKey("IdBureau");
 
                     b.HasIndex("IdBatiment", "Numero")
                         .IsUnique();
 
                     b.ToTable("Bureaux", (string)null);
+                });
+
+            modelBuilder.Entity("GestionEspaces.Domain.Entities.Reservation", b =>
+                {
+                    b.Property<int>("IdReservation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdReservation"));
+
+                    b.Property<DateTime>("DateDebut")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateFin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdAgent")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdBureau")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Motif")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Statut")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("IdReservation");
+
+                    b.HasIndex("IdAgent");
+
+                    b.HasIndex("IdBureau", "DateDebut", "DateFin");
+
+                    b.ToTable("Reservations", (string)null);
                 });
 
             modelBuilder.Entity("GestionEspaces.Domain.Entities.Site", b =>
@@ -288,6 +356,12 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.HasKey("IdSite");
 
@@ -355,6 +429,25 @@ namespace GestionEspaces.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Batiment");
+                });
+
+            modelBuilder.Entity("GestionEspaces.Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("GestionEspaces.Domain.Entities.Agent", "Agent")
+                        .WithMany()
+                        .HasForeignKey("IdAgent")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("GestionEspaces.Domain.Entities.Bureau", "Bureau")
+                        .WithMany()
+                        .HasForeignKey("IdBureau")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Agent");
+
+                    b.Navigation("Bureau");
                 });
 
             modelBuilder.Entity("GestionEspaces.Domain.Entities.Site", b =>
