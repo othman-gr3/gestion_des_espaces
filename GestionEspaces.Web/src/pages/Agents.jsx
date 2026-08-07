@@ -9,92 +9,58 @@ const Agents = () => {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Search/Filters
   const [searchText, setSearchText] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Forms & Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAgent, setCurrentAgent] = useState(null);
-  const [formData, setFormData] = useState({
-    nom: '',
-    prenom: '',
-    matricule: '',
-    email: '',
-    telephone: '',
-    fonction: '',
-    departement: '',
-    dateEmbauche: '',
-    image: '',
-  });
+  const [formData, setFormData] = useState({ nom: '', prenom: '', matricule: '', email: '', telephone: '', fonction: '', departement: '', dateEmbauche: '', image: '' });
   const [formError, setFormError] = useState('');
 
-  // Assignment Modal states
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [assignType, setAssignType] = useState('office'); // 'office' or 'asset'
+  const [assignType, setAssignType] = useState('office');
   const [selectedAgentId, setSelectedAgentId] = useState(null);
-  const [assignOptions, setAssignOptions] = useState([]); // list of available bureaux or actifs
+  const [assignOptions, setAssignOptions] = useState([]);
   const [selectedOptionId, setSelectedOptionId] = useState('');
   const [assignError, setAssignError] = useState('');
 
-  // Expandable row for details & assignments
   const [expandedAgentId, setExpandedAgentId] = useState(null);
   const [agentOfficeAssignments, setAgentOfficeAssignments] = useState([]);
   const [agentAssetAssignments, setAgentAssetAssignments] = useState([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchAgents();
-  }, [page, searchText]);
+  useEffect(() => { fetchAgents(); }, [page, searchText]);
 
   const fetchAgents = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await api.get('/agents', {
-        params: {
-          searchText: searchText || undefined,
-          pageNumber: page,
-          pageSize: pageSize,
-        },
-      });
+      const response = await api.get('/agents', { params: { searchText: searchText || undefined, pageNumber: page, pageSize } });
       setAgents(response.data.items || []);
       setTotalCount(response.data.totalCount || 0);
     } catch (err) {
       console.error('Failed to load agents:', err);
       setError('Impossible de charger les agents.');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const fetchAgentAssignments = async (agentId) => {
     setDetailsLoading(true);
     try {
-      const [officeRes, assetRes] = await Promise.all([
-        api.get(`/agents/${agentId}/office-assignments`),
-        api.get(`/agents/${agentId}/asset-assignments`),
-      ]);
+      const [officeRes, assetRes] = await Promise.all([api.get(`/agents/${agentId}/office-assignments`), api.get(`/agents/${agentId}/asset-assignments`)]);
       setAgentOfficeAssignments(officeRes.data || []);
       setAgentAssetAssignments(assetRes.data || []);
-    } catch (err) {
-      console.error('Failed to load assignments:', err);
-    } finally {
-      setDetailsLoading(false);
-    }
+    } catch (err) { console.error('Failed to load assignments:', err); }
+    finally { setDetailsLoading(false); }
   };
 
   const handleToggleExpand = (agentId) => {
     if (expandedAgentId === agentId) {
-      setExpandedAgentId(null);
-      setAgentOfficeAssignments([]);
-      setAgentAssetAssignments([]);
+      setExpandedAgentId(null); setAgentOfficeAssignments([]); setAgentAssetAssignments([]);
     } else {
-      setExpandedAgentId(agentId);
-      fetchAgentAssignments(agentId);
+      setExpandedAgentId(agentId); fetchAgentAssignments(agentId);
     }
   };
 
@@ -102,30 +68,10 @@ const Agents = () => {
     setFormError('');
     if (agent) {
       setCurrentAgent(agent);
-      setFormData({
-        nom: agent.nom,
-        prenom: agent.prenom,
-        matricule: agent.matricule,
-        email: agent.email || '',
-        telephone: agent.telephone || '',
-        fonction: agent.fonction || '',
-        departement: agent.departement || '',
-        dateEmbauche: agent.dateEmbauche ? agent.dateEmbauche.split('T')[0] : '',
-        image: agent.image || '',
-      });
+      setFormData({ nom: agent.nom, prenom: agent.prenom, matricule: agent.matricule, email: agent.email || '', telephone: agent.telephone || '', fonction: agent.fonction || '', departement: agent.departement || '', dateEmbauche: agent.dateEmbauche ? agent.dateEmbauche.split('T')[0] : '', image: agent.image || '' });
     } else {
       setCurrentAgent(null);
-      setFormData({
-        nom: '',
-        prenom: '',
-        matricule: '',
-        email: '',
-        telephone: '',
-        fonction: '',
-        departement: '',
-        dateEmbauche: '',
-        image: '',
-      });
+      setFormData({ nom: '', prenom: '', matricule: '', email: '', telephone: '', fonction: '', departement: '', dateEmbauche: '', image: '' });
     }
     setIsModalOpen(true);
   };
@@ -134,16 +80,9 @@ const Agents = () => {
     e.preventDefault();
     setFormError('');
     try {
-      const payload = {
-        ...formData,
-        dateEmbauche: formData.dateEmbauche ? new Date(formData.dateEmbauche).toISOString() : null,
-      };
-
+      const payload = { ...formData, dateEmbauche: formData.dateEmbauche ? new Date(formData.dateEmbauche).toISOString() : null };
       if (currentAgent) {
-        await api.put(`/agents/${currentAgent.idAgent}`, {
-          concurrencyToken: currentAgent.concurrencyToken,
-          ...payload,
-        });
+        await api.put(`/agents/${currentAgent.idAgent}`, { concurrencyToken: currentAgent.concurrencyToken, ...payload });
       } else {
         await api.post('/agents', payload);
       }
@@ -151,34 +90,23 @@ const Agents = () => {
       fetchAgents();
     } catch (err) {
       console.error('Submit error:', err);
-      const detail = err.response?.data?.detail || "Une erreur est survenue lors de l'enregistrement.";
-      setFormError(detail);
+      setFormError(err.response?.data?.detail || "Une erreur est survenue lors de l'enregistrement.");
     }
   };
 
   const handleDelete = async (agent) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer l'agent "${agent.prenom} ${agent.nom}" ?`)) return;
+    if (!window.confirm(`Supprimer l'agent "${agent.prenom} ${agent.nom}" ?`)) return;
     try {
-      await api.delete(`/agents/${agent.idAgent}`, {
-        data: { concurrencyToken: agent.concurrencyToken }
-      });
+      await api.delete(`/agents/${agent.idAgent}`, { data: { concurrencyToken: agent.concurrencyToken } });
       fetchAgents();
     } catch (err) {
       console.error('Delete error:', err);
-      const detail = err.response?.data?.detail || "Impossible de supprimer l'agent.";
-      alert(detail);
+      alert(err.response?.data?.detail || "Impossible de supprimer l'agent.");
     }
   };
 
-  // Assignment logic
   const handleOpenAssignModal = async (agentId, type) => {
-    setSelectedAgentId(agentId);
-    setAssignType(type);
-    setSelectedOptionId('');
-    setAssignError('');
-    setAssignOptions([]);
-    setIsAssignModalOpen(true);
-
+    setSelectedAgentId(agentId); setAssignType(type); setSelectedOptionId(''); setAssignError(''); setAssignOptions([]); setIsAssignModalOpen(true);
     try {
       if (type === 'office') {
         const res = await api.get('/bureaux?statut=0&pageSize=100');
@@ -187,49 +115,32 @@ const Agents = () => {
         const res = await api.get('/actifs?pageSize=100');
         setAssignOptions(res.data.items || []);
       }
-    } catch (err) {
-      console.error('Failed to load assignment options:', err);
-      setAssignError('Impossible de charger les options disponibles.');
-    }
+    } catch (err) { setAssignError('Impossible de charger les options disponibles.'); }
   };
 
   const handleAssignSubmit = async (e) => {
     e.preventDefault();
     setAssignError('');
-    if (!selectedOptionId) {
-      setAssignError('Veuillez sélectionner un choix.');
-      return;
-    }
-
+    if (!selectedOptionId) { setAssignError('Veuillez sélectionner un choix.'); return; }
     try {
       if (assignType === 'office') {
-        await api.post(`/agents/${selectedAgentId}/office-assignments`, {
-          bureauId: parseInt(selectedOptionId),
-          dateAffectation: new Date().toISOString(),
-        });
+        await api.post(`/agents/${selectedAgentId}/office-assignments`, { bureauId: parseInt(selectedOptionId), dateAffectation: new Date().toISOString() });
       } else {
-        await api.post(`/agents/${selectedAgentId}/asset-assignments`, {
-          actifId: parseInt(selectedOptionId),
-          dateAffectation: new Date().toISOString(),
-        });
+        await api.post(`/agents/${selectedAgentId}/asset-assignments`, { actifId: parseInt(selectedOptionId), dateAffectation: new Date().toISOString() });
       }
       setIsAssignModalOpen(false);
       fetchAgentAssignments(selectedAgentId);
     } catch (err) {
       console.error('Assignment error:', err);
-      const detail = err.response?.data?.detail || "Impossible d'effectuer l'affectation.";
-      setAssignError(detail);
+      setAssignError(err.response?.data?.detail || "Impossible d'effectuer l'affectation.");
     }
   };
 
   const handleCloseAssignment = async (assignmentId, type) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir clore cette affectation ?")) return;
+    if (!window.confirm("Clore cette affectation ?")) return;
     try {
       const endpoint = type === 'office' ? 'office-assignments' : 'asset-assignments';
-      // Close affectation with finish date payload
-      await api.delete(`/agents/${expandedAgentId}/${endpoint}/${assignmentId}`, {
-        data: { dateFin: new Date().toISOString() }
-      });
+      await api.delete(`/agents/${expandedAgentId}/${endpoint}/${assignmentId}`, { data: { dateFin: new Date().toISOString() } });
       fetchAgentAssignments(expandedAgentId);
     } catch (err) {
       console.error('Failed to close assignment:', err);
@@ -238,151 +149,104 @@ const Agents = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Search & Actions Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-border-subtle bg-surface-bg p-4 rounded-lg shadow-sm">
-        <div className="flex max-w-sm flex-1 gap-2">
+    <div>
+      {/* Toolbar */}
+      <div className="flex items-center justify-between border-b-2 border-primary bg-surface-bg px-5 py-3 mb-6">
+        <div className="flex items-center gap-3 flex-1 max-w-sm">
           <input
             type="text"
             placeholder="Rechercher nom, prénom, matricule..."
             value={searchText}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-              setPage(1);
-            }}
-            className="w-full rounded border border-border-subtle bg-surface-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none"
+            onChange={(e) => { setSearchText(e.target.value); setPage(1); }}
+            className="form-field flex-1"
           />
         </div>
-
         {isGestionnaire && (
-          <button
-            onClick={() => handleOpenModal()}
-            className="rounded bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors focus:outline-none"
-          >
-            Nouvel Agent
+          <button onClick={() => handleOpenModal()} className="ml-4 bg-primary px-5 py-2 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
+            + Nouvel agent
           </button>
         )}
       </div>
 
-      {error && (
-        <div className="rounded bg-danger/10 border border-danger/20 p-4 text-sm font-semibold text-danger">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{error}</div>}
 
-      {/* Agents Table */}
-      <div className="overflow-hidden border border-border-subtle bg-surface-bg rounded-lg shadow-sm">
-        <table className="min-w-full divide-y divide-border-subtle">
-          <thead className="bg-neutral-bg">
-            <tr>
-              <th className="w-10 px-6 py-3"></th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-text-secondary">Matricule</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-text-secondary">Nom / Prénom</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-text-secondary">Email / Tél</th>
-              <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-text-secondary">Département</th>
-              <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-text-secondary">Actions</th>
+      {/* Table */}
+      <div className="border border-border-subtle bg-surface-bg overflow-hidden">
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b-2 border-primary bg-neutral-bg">
+              <th className="w-10 px-4 py-3" />
+              <th className="px-6 py-3 text-left"><span className="th-label">Matricule</span></th>
+              <th className="px-6 py-3 text-left"><span className="th-label">Nom / Prénom</span></th>
+              <th className="px-6 py-3 text-left"><span className="th-label">Email / Tél.</span></th>
+              <th className="px-6 py-3 text-left"><span className="th-label">Département</span></th>
+              <th className="px-6 py-3 text-right"><span className="th-label">Actions</span></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-subtle">
+          <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-sm text-text-secondary">
-                  Chargement des agents...
-                </td>
-              </tr>
+              <tr><td colSpan={6} className="px-6 py-10 text-center text-[13px] text-text-secondary">Chargement des agents...</td></tr>
             ) : agents.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-sm text-text-secondary">
-                  Aucun agent trouvé.
-                </td>
-              </tr>
+              <tr><td colSpan={6} className="px-6 py-10 text-center text-[13px] text-text-secondary">Aucun agent trouvé.</td></tr>
             ) : (
               agents.map((agent) => {
                 const isExpanded = expandedAgentId === agent.idAgent;
                 return (
                   <React.Fragment key={agent.idAgent}>
-                    <tr className="hover:bg-neutral-bg/30">
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => handleToggleExpand(agent.idAgent)}
-                          className="text-text-secondary font-bold hover:text-primary transition-colors focus:outline-none"
-                        >
+                    <tr className="border-t border-border-subtle hover:bg-neutral-bg/50 transition-colors">
+                      <td className="px-4 py-4 text-center">
+                        <button onClick={() => handleToggleExpand(agent.idAgent)} className="text-[12px] text-text-secondary hover:text-primary transition-colors focus:outline-none w-5 h-5 flex items-center justify-center mx-auto">
                           {isExpanded ? '▼' : '▶'}
                         </button>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm font-bold text-primary">{agent.matricule}</td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-text-primary">
-                        {agent.nom.toUpperCase()} {agent.prenom}
+                      <td className="whitespace-nowrap px-6 py-4 text-[13px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{agent.matricule}</td>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-[14px] font-semibold text-text-primary">{agent.nom.toUpperCase()} {agent.prenom}</div>
+                        {agent.fonction && <div className="text-[12px] text-text-secondary mt-0.5">{agent.fonction}</div>}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-text-secondary">
-                        <div>{agent.email || '-'}</div>
-                        <div className="text-xs">{agent.telephone || ''}</div>
+                      <td className="whitespace-nowrap px-6 py-4">
+                        <div className="text-[13px] text-text-secondary">{agent.email || '—'}</div>
+                        {agent.telephone && <div className="text-[12px] text-text-secondary opacity-75">{agent.telephone}</div>}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-text-primary">
-                        <div>{agent.departement || '-'}</div>
-                        <div className="text-xs text-text-secondary">{agent.fonction || ''}</div>
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium space-x-3">
+                      <td className="whitespace-nowrap px-6 py-4 text-[13px] text-text-primary">{agent.departement || '—'}</td>
+                      <td className="whitespace-nowrap px-6 py-4 text-right">
                         {isGestionnaire && (
-                          <>
-                            <button
-                              onClick={() => handleOpenModal(agent)}
-                              className="text-primary hover:text-primary-dark transition-colors"
-                            >
-                              Modifier
-                            </button>
-                            <button
-                              onClick={() => handleDelete(agent)}
-                              className="text-danger hover:text-red-700 transition-colors"
-                            >
-                              Supprimer
-                            </button>
-                          </>
+                          <div className="flex items-center justify-end gap-5">
+                            <button onClick={() => handleOpenModal(agent)} className="btn-text-action btn-text-action-primary">Modifier</button>
+                            <button onClick={() => handleDelete(agent)} className="btn-text-action btn-text-action-danger">Supprimer</button>
+                          </div>
                         )}
                       </td>
                     </tr>
 
-                    {/* Expandable row: Assignments and detailed view */}
                     {isExpanded && (
-                      <tr className="bg-neutral-bg/25">
-                        <td colSpan={6} className="px-12 py-6 border-y border-border-subtle">
-                          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                            {/* Desk Assignments */}
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between border-b border-border-subtle pb-2">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-text-primary">Affectation Poste</h4>
+                      <tr className="expand-row-enter">
+                        <td colSpan={6} className="border-t border-b-2 border-primary bg-neutral-bg/40 px-0 py-0">
+                          <div className="px-10 py-6 grid grid-cols-1 gap-8 md:grid-cols-2">
+                            {/* Office */}
+                            <div>
+                              <div className="flex items-center justify-between border-b border-border-subtle pb-2 mb-4">
+                                <span className="th-label">Affectation poste</span>
                                 {isGestionnaire && (
-                                  <button
-                                    onClick={() => handleOpenAssignModal(agent.idAgent, 'office')}
-                                    className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded hover:bg-accent hover:text-white transition-colors"
-                                  >
-                                    + Affecter
-                                  </button>
+                                  <button onClick={() => handleOpenAssignModal(agent.idAgent, 'office')} className="text-[12px] font-semibold text-accent hover:opacity-75 transition-opacity">+ Affecter</button>
                                 )}
                               </div>
-
                               {detailsLoading ? (
-                                <div className="text-xs text-text-secondary">Chargement...</div>
+                                <div className="text-[13px] text-text-secondary">Chargement...</div>
                               ) : agentOfficeAssignments.length === 0 ? (
-                                <div className="text-xs text-text-secondary italic">Aucune affectation de poste.</div>
+                                <div className="text-[13px] text-text-secondary italic">Aucune affectation de poste active.</div>
                               ) : (
                                 <div className="space-y-2">
                                   {agentOfficeAssignments.map((a) => (
-                                    <div key={a.idAffectationPoste} className="flex items-center justify-between p-3 border border-border-subtle bg-surface-bg rounded">
-                                      <div className="text-xs text-text-primary">
-                                        <div className="font-bold">Bureau N° {a.bureauNumero || a.bureauId}</div>
-                                        <div className="text-text-secondary mt-0.5">
-                                          Du {new Date(a.dateAffectation).toLocaleDateString()}
-                                          {a.dateFin ? ` au ${new Date(a.dateFin).toLocaleDateString()}` : ' (Actif)'}
+                                    <div key={a.idAffectationPoste} className="flex items-center justify-between border-l-2 border-primary bg-surface-bg px-4 py-3">
+                                      <div>
+                                        <div className="text-[13px] font-semibold text-text-primary">Bureau N° {a.bureauNumero || a.bureauId}</div>
+                                        <div className="text-[12px] text-text-secondary mt-0.5">
+                                          {new Date(a.dateAffectation).toLocaleDateString('fr-FR')} → {a.dateFin ? new Date(a.dateFin).toLocaleDateString('fr-FR') : 'En cours'}
                                         </div>
                                       </div>
                                       {!a.dateFin && isGestionnaire && (
-                                        <button
-                                          onClick={() => handleCloseAssignment(a.idAffectationPoste, 'office')}
-                                          className="text-[10px] font-bold text-danger hover:underline"
-                                        >
-                                          Clore
-                                        </button>
+                                        <button onClick={() => handleCloseAssignment(a.idAffectationPoste, 'office')} className="btn-text-action btn-text-action-danger ml-4">Clore</button>
                                       )}
                                     </div>
                                   ))}
@@ -390,42 +254,30 @@ const Agents = () => {
                               )}
                             </div>
 
-                            {/* Asset Assignments */}
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between border-b border-border-subtle pb-2">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-text-primary">Affectations Actifs (Matériel)</h4>
+                            {/* Assets */}
+                            <div>
+                              <div className="flex items-center justify-between border-b border-border-subtle pb-2 mb-4">
+                                <span className="th-label">Actifs attribués</span>
                                 {isGestionnaire && (
-                                  <button
-                                    onClick={() => handleOpenAssignModal(agent.idAgent, 'asset')}
-                                    className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded hover:bg-accent hover:text-white transition-colors"
-                                  >
-                                    + Attribuer matériel
-                                  </button>
+                                  <button onClick={() => handleOpenAssignModal(agent.idAgent, 'asset')} className="text-[12px] font-semibold text-accent hover:opacity-75 transition-opacity">+ Attribuer</button>
                                 )}
                               </div>
-
                               {detailsLoading ? (
-                                <div className="text-xs text-text-secondary">Chargement...</div>
+                                <div className="text-[13px] text-text-secondary">Chargement...</div>
                               ) : agentAssetAssignments.length === 0 ? (
-                                <div className="text-xs text-text-secondary italic">Aucun matériel attribué.</div>
+                                <div className="text-[13px] text-text-secondary italic">Aucun matériel attribué sur cette fiche.</div>
                               ) : (
                                 <div className="space-y-2">
                                   {agentAssetAssignments.map((a) => (
-                                    <div key={a.idAffectationActif} className="flex items-center justify-between p-3 border border-border-subtle bg-surface-bg rounded">
-                                      <div className="text-xs text-text-primary">
-                                        <div className="font-bold">{a.actifNom || `Matériel ${a.actifId}`}</div>
-                                        <div className="text-text-secondary mt-0.5">
-                                          Du {new Date(a.dateAffectation).toLocaleDateString()}
-                                          {a.dateFin ? ` au ${new Date(a.dateFin).toLocaleDateString()}` : ' (Actif)'}
+                                    <div key={a.idAffectationActif} className="flex items-center justify-between border-l-2 border-accent bg-surface-bg px-4 py-3">
+                                      <div>
+                                        <div className="text-[13px] font-semibold text-text-primary">{a.actifNom || `Actif ${a.actifId}`}</div>
+                                        <div className="text-[12px] text-text-secondary mt-0.5">
+                                          {new Date(a.dateAffectation).toLocaleDateString('fr-FR')} → {a.dateFin ? new Date(a.dateFin).toLocaleDateString('fr-FR') : 'En cours'}
                                         </div>
                                       </div>
                                       {!a.dateFin && isGestionnaire && (
-                                        <button
-                                          onClick={() => handleCloseAssignment(a.idAffectationActif, 'asset')}
-                                          className="text-[10px] font-bold text-danger hover:underline"
-                                        >
-                                          Clore
-                                        </button>
+                                        <button onClick={() => handleCloseAssignment(a.idAffectationActif, 'asset')} className="btn-text-action btn-text-action-danger ml-4">Clore</button>
                                       )}
                                     </div>
                                   ))}
@@ -446,213 +298,103 @@ const Agents = () => {
 
       {/* Pagination */}
       {totalCount > pageSize && (
-        <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="rounded border border-border-subtle bg-surface-bg px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-neutral-bg disabled:opacity-50"
-          >
-            Précédent
-          </button>
-          <span className="text-xs text-text-secondary">
-            Page {page} sur {Math.ceil(totalCount / pageSize)}
-          </span>
-          <button
-            disabled={page * pageSize >= totalCount}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded border border-border-subtle bg-surface-bg px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-neutral-bg disabled:opacity-50"
-          >
-            Suivant
-          </button>
+        <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-4">
+          <button disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40">← Précédent</button>
+          <span className="text-[12px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>Page {page} / {Math.ceil(totalCount / pageSize)}</span>
+          <button disabled={page * pageSize >= totalCount} onClick={() => setPage((p) => p + 1)} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40">Suivant →</button>
         </div>
       )}
 
-      {/* Form Modal */}
+      {/* Agent Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg border border-border-subtle bg-surface-bg p-6 rounded-lg shadow-lg">
-            <h3 className="text-lg font-bold text-text-primary mb-4">
-              {currentAgent ? "Modifier l'agent" : 'Ajouter un agent'}
-            </h3>
-
-            {formError && (
-              <div className="mb-4 rounded bg-danger/10 border border-danger/20 p-3 text-xs font-semibold text-danger">
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Nom</label>
-                  <input
-                    type="text"
-                    value={formData.nom}
-                    onChange={(e) => setFormData((p) => ({ ...p, nom: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Prénom</label>
-                  <input
-                    type="text"
-                    value={formData.prenom}
-                    onChange={(e) => setFormData((p) => ({ ...p, prenom: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Matricule</label>
-                  <input
-                    type="text"
-                    value={formData.matricule}
-                    onChange={(e) => setFormData((p) => ({ ...p, matricule: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Département</label>
-                  <input
-                    type="text"
-                    value={formData.departement}
-                    onChange={(e) => setFormData((p) => ({ ...p, departement: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Téléphone</label>
-                  <input
-                    type="text"
-                    value={formData.telephone}
-                    onChange={(e) => setFormData((p) => ({ ...p, telephone: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Fonction</label>
-                  <input
-                    type="text"
-                    value={formData.fonction}
-                    onChange={(e) => setFormData((p) => ({ ...p, fonction: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase">Date d'embauche</label>
-                  <input
-                    type="date"
-                    value={formData.dateEmbauche}
-                    onChange={(e) => setFormData((p) => ({ ...p, dateEmbauche: e.target.value }))}
-                    className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                  />
-                </div>
-              </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/30" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-slide-in h-full w-full max-w-lg bg-surface-bg border-l-2 border-primary overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b-2 border-primary px-6 py-4 bg-neutral-bg">
               <div>
-                <label className="block text-xs font-bold text-text-secondary uppercase">Image URL (optionnel)</label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))}
-                  className="mt-1.5 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:border-primary focus:bg-white focus:outline-none"
-                />
+                <div className="th-label mb-0.5">{currentAgent ? 'Modification' : 'Création'}</div>
+                <h3 className="text-[17px] font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{currentAgent ? 'Fiche agent' : 'Nouvel agent'}</h3>
               </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="rounded border border-border-subtle bg-surface-bg px-4 py-2 text-sm font-semibold text-text-primary hover:bg-neutral-bg focus:outline-none"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="rounded bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors focus:outline-none"
-                >
-                  Enregistrer
-                </button>
+              <button onClick={() => setIsModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl w-8 h-8 flex items-center justify-center">✕</button>
+            </div>
+            {formError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{formError}</div>}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div className="grid grid-cols-3 gap-5">
+                <div className="col-span-2">
+                  <label className="field-label">Nom</label>
+                  <input type="text" value={formData.nom} onChange={(e) => setFormData((p) => ({ ...p, nom: e.target.value }))} className="form-field" required />
+                </div>
+                <div>
+                  <label className="field-label">Prénom</label>
+                  <input type="text" value={formData.prenom} onChange={(e) => setFormData((p) => ({ ...p, prenom: e.target.value }))} className="form-field" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="field-label">Matricule</label>
+                  <input type="text" value={formData.matricule} onChange={(e) => setFormData((p) => ({ ...p, matricule: e.target.value }))} className="form-field" required />
+                </div>
+                <div>
+                  <label className="field-label">Département</label>
+                  <input type="text" value={formData.departement} onChange={(e) => setFormData((p) => ({ ...p, departement: e.target.value }))} className="form-field" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="field-label">Email</label>
+                  <input type="email" value={formData.email} onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))} className="form-field" />
+                </div>
+                <div>
+                  <label className="field-label">Téléphone</label>
+                  <input type="text" value={formData.telephone} onChange={(e) => setFormData((p) => ({ ...p, telephone: e.target.value }))} className="form-field" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="field-label">Fonction</label>
+                  <input type="text" value={formData.fonction} onChange={(e) => setFormData((p) => ({ ...p, fonction: e.target.value }))} className="form-field" />
+                </div>
+                <div>
+                  <label className="field-label">Date d'embauche</label>
+                  <input type="date" value={formData.dateEmbauche} onChange={(e) => setFormData((p) => ({ ...p, dateEmbauche: e.target.value }))} className="form-field" />
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
+                <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Assignment Modal (Office or Asset) */}
+      {/* Assignment Modal */}
       {isAssignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md border border-border-subtle bg-surface-bg p-6 rounded-lg shadow-lg">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-text-primary mb-4">
-              {assignType === 'office' ? "Affecter un bureau" : "Attribuer un matériel"}
-            </h3>
-
-            {assignError && (
-              <div className="mb-4 rounded bg-danger/10 border border-danger/20 p-3 text-xs font-semibold text-danger">
-                {assignError}
-              </div>
-            )}
-
-            <form onSubmit={handleAssignSubmit} className="space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/30" onClick={() => setIsAssignModalOpen(false)}>
+          <div className="modal-slide-in h-full w-full max-w-sm bg-surface-bg border-l-2 border-accent overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b-2 border-accent px-6 py-4 bg-neutral-bg">
               <div>
-                <label className="block text-xs font-bold text-text-secondary uppercase">
-                  {assignType === 'office' ? "Bureau Disponible" : "Matériel Disponible"}
-                </label>
-                <select
-                  value={selectedOptionId}
-                  onChange={(e) => setSelectedOptionId(e.target.value)}
-                  className="mt-2 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary focus:bg-white focus:outline-none"
-                  required
-                >
+                <div className="th-label mb-0.5">Affectation</div>
+                <h3 className="text-[17px] font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+                  {assignType === 'office' ? 'Affecter un bureau' : 'Attribuer du matériel'}
+                </h3>
+              </div>
+              <button onClick={() => setIsAssignModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl w-8 h-8 flex items-center justify-center">✕</button>
+            </div>
+            {assignError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{assignError}</div>}
+            <form onSubmit={handleAssignSubmit} className="p-6 space-y-5">
+              <div>
+                <label className="field-label">{assignType === 'office' ? 'Bureau disponible' : 'Matériel disponible'}</label>
+                <select value={selectedOptionId} onChange={(e) => setSelectedOptionId(e.target.value)} className="form-field" required>
                   <option value="">Sélectionner...</option>
                   {assignType === 'office'
-                    ? assignOptions.map((b) => (
-                        <option key={b.idBureau} value={b.idBureau}>
-                          N° {b.numero} - {b.type} (Étage {b.etage})
-                        </option>
-                      ))
-                    : assignOptions.map((a) => (
-                        <option key={a.idActif} value={a.idActif}>
-                          {a.nom} {a.numeroSerie ? `(S/N: ${a.numeroSerie})` : ''}
-                        </option>
-                      ))}
+                    ? assignOptions.map((b) => <option key={b.idBureau} value={b.idBureau}>N° {b.numero} — {b.type} (Ét. {b.etage})</option>)
+                    : assignOptions.map((a) => <option key={a.idActif} value={a.idActif}>{a.nom}{a.numeroSerie ? ` · S/N ${a.numeroSerie}` : ''}</option>)
+                  }
                 </select>
               </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle">
-                <button
-                  type="button"
-                  onClick={() => setIsAssignModalOpen(false)}
-                  className="rounded border border-border-subtle bg-surface-bg px-4 py-2 text-sm font-semibold text-text-primary hover:bg-neutral-bg focus:outline-none"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="rounded bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-dark transition-colors focus:outline-none"
-                >
-                  Confirmer l'affectation
-                </button>
+              <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
+                <button type="button" onClick={() => setIsAssignModalOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
+                <button type="submit" className="bg-accent px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:opacity-90 transition-opacity" style={{ fontFamily: 'var(--font-mono)' }}>Confirmer</button>
               </div>
             </form>
           </div>

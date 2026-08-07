@@ -34,68 +34,125 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-bg px-4">
-      <div className="w-full max-w-md border border-border-subtle bg-surface-bg p-8 shadow-sm rounded-lg">
-        {/* Institutional Branding Header */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+    <div className="flex min-h-screen w-screen overflow-hidden">
+      {/* Left panel — institutional identity */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-5/12 bg-primary p-12 border-t-4 border-accent"
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        <div>
+          <div
+            className="text-[11px] text-accent/90 tracking-[0.22em] uppercase mb-2"
+            style={{ fontFamily: 'var(--font-mono)' }}
+          >
+            Portail administratif
           </div>
-          <h2 className="mt-4 text-2xl font-bold tracking-tight text-text-primary">Gestion des Espaces</h2>
-          <p className="mt-2 text-sm text-text-secondary">Système d'administration et d'affectation</p>
+          <div className="w-8 h-[2px] bg-accent mb-8" />
         </div>
 
-        {error && (
-          <div className="mb-6 rounded bg-danger/10 border border-danger/20 p-3 text-sm font-semibold text-danger">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-              Adresse E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none"
-              placeholder="ex: gestionnaire@domain.com"
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 block w-full rounded border border-border-subtle bg-neutral-bg px-3 py-2 text-sm text-text-primary placeholder-gray-400 focus:border-primary focus:bg-white focus:outline-none"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded bg-primary py-2.5 text-sm font-bold text-white hover:bg-primary-dark transition-colors focus:outline-none disabled:opacity-50"
+        <div>
+          <h1
+            className="text-5xl font-extrabold text-white leading-tight mb-6"
+            style={{ fontWeight: 800, lineHeight: 1.05 }}
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
+            Gestion<br />des<br />Espaces
+          </h1>
+          <p className="text-[15px] text-white/70 leading-relaxed max-w-xs">
+            Administration des implantations, affectation des agents et planification des créneaux d'occupation.
+          </p>
+        </div>
 
-        <div className="mt-8 text-center text-xs text-text-secondary">
-          <p>Pour le rôle <span className="font-bold">Gestionnaire</span>, utilisez une adresse contenant "gestion".</p>
-          <p className="mt-1">Pour le rôle <span className="font-bold">Lecteur</span>, utilisez n'importe quelle autre adresse.</p>
+        <div
+          className="text-[11px] text-white/40 tracking-wide"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          <div>ACCÈS RÉSERVÉ AU PERSONNEL HABILITÉ</div>
+          <div className="mt-1">Toute connexion est journalisée</div>
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex flex-1 flex-col justify-center bg-neutral-bg px-8 sm:px-16 lg:px-20">
+        {/* Mobile header */}
+        <div className="mb-10 lg:hidden">
+          <div className="text-[11px] text-accent tracking-[0.22em] uppercase mb-1" style={{ fontFamily: 'var(--font-mono)' }}>
+            Portail administratif
+          </div>
+          <h1 className="text-3xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+            GestionEspaces
+          </h1>
+        </div>
+
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-[3px] h-5 bg-primary flex-shrink-0" />
+              <h2 className="text-[22px] font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+                Connexion
+              </h2>
+            </div>
+            <p className="text-[13px] text-text-secondary mt-1 ml-[18px]">
+              Renseignez vos identifiants de session
+            </p>
+          </div>
+
+          {error && (
+            <div className="mb-6 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="field-label">
+                Adresse e-mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="form-field"
+                placeholder="gestionnaire@domaine.fr"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="field-label">
+                Mot de passe
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-field"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                id="login-submit"
+                disabled={loading}
+                className="w-full bg-primary px-6 py-3 text-[13px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors focus:outline-none disabled:opacity-50"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {loading ? 'Vérification...' : 'Ouvrir une session'}
+              </button>
+            </div>
+          </form>
+
+          <div
+            className="mt-8 border-t border-border-subtle pt-5 text-[12px] text-text-secondary space-y-1.5"
+            style={{ fontFamily: 'var(--font-mono)' }}
+          >
+            <div><span className="text-primary font-medium">Rôle Gestionnaire</span> — adresse contenant "gestion"</div>
+            <div><span className="text-text-primary font-medium">Rôle Lecteur</span> — toute autre adresse</div>
+          </div>
         </div>
       </div>
     </div>

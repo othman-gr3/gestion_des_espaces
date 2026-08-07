@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -13,7 +14,10 @@
   --color-danger: #B3261E;
   --color-border-subtle: #E4E7EC;
 
-  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Character-driven font pairing */
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
 }
 
 @layer base {
@@ -21,5 +25,153 @@
     background-color: var(--color-neutral-bg);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Square corners globally — keep the structural feel */
+  * {
+    border-radius: 0 !important;
+  }
+
+  /* Comfortable table cells */
+  td, th {
+    vertical-align: middle;
+  }
+
+  /* Mono only for inputs — data precision */
+  input, select, textarea {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem !important; /* 13px — readable */
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+  }
+
+  /* Button press feedback */
+  button:not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+/* === STRUCTURAL UTILITIES === */
+@layer utilities {
+  /* Modal slide-in from right */
+  .modal-slide-in {
+    animation: slideInRight 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+  }
+
+  /* Expandable row entrance */
+  .expand-row-enter {
+    animation: expandRow 0.18s ease-out both;
+  }
+  @keyframes expandRow {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Status tags — readable mono labels, not too small */
+  .status-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;      /* 11.2px — comfortably legible */
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    display: inline-block;
+    line-height: 1.4;
+  }
+
+  /* Structural card — hard left accent */
+  .struct-card {
+    border-left: 3px solid var(--color-primary);
+    border-top: 1px solid var(--color-border-subtle);
+    border-right: 1px solid var(--color-border-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
+    background-color: var(--color-surface-bg);
+  }
+
+  /* Text action button with underline reveal */
+  .btn-text-action {
+    position: relative;
+    font-family: var(--font-sans);   /* Syne — easier to read than mono */
+    font-size: 0.8125rem;            /* 13px */
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .btn-text-action::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    transition: width 0.18s ease;
+  }
+  .btn-text-action:hover::after { width: 100%; }
+
+  .btn-text-action-primary  { color: var(--color-primary); }
+  .btn-text-action-primary::after  { background: var(--color-primary); }
+  .btn-text-action-danger   { color: var(--color-danger); }
+  .btn-text-action-danger::after   { background: var(--color-danger); }
+  .btn-text-action-success  { color: var(--color-success); }
+  .btn-text-action-success::after  { background: var(--color-success); }
+  .btn-text-action-muted    { color: var(--color-text-secondary); }
+  .btn-text-action-muted::after    { background: var(--color-text-secondary); }
+
+  /* Form field — box style for easier targeting by all users */
+  .form-field {
+    display: block;
+    width: 100%;
+    background-color: var(--color-neutral-bg);
+    border: 1px solid var(--color-border-subtle);
+    border-left: 2px solid var(--color-border-subtle);
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text-primary);
+    transition: border-color 0.15s, border-left-color 0.15s, background-color 0.15s;
+    outline: none;
+    line-height: 1.5;
+  }
+  .form-field:focus {
+    border-color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    background-color: var(--color-surface-bg);
+  }
+  .form-field::placeholder {
+    color: #9CA3AF;
+  }
+
+  /* Section label — readable, not micro */
+  .field-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;   /* 11px — minimum comfortable size */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.375rem;
+  }
+
+  /* Table header label */
+  .th-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
   }
 }
