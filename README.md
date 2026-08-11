@@ -82,14 +82,15 @@ Update the connection string in `GestionEspaces.Api/appsettings.json` (or `appse
 
 ```json
 "ConnectionStrings": {
-  "GestionEspacesDatabase": "Server=(localdb)\\MSSQLLocalDB;Database=GestionEspacesDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  "GestionEspacesDatabase": "Server=localhost\\SQLEXPRESS;Database=GestionEspacesDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"
 }
 ```
 
-Open a shell terminal at the backend directory root (`/GestionEspaces`) and apply migrations:
+Open a shell terminal at the repository root (`D:\downloads\gestion_des_espaces`) and apply migrations:
 
 ```powershell
-dotnet ef database update --project GestionEspaces.Infrastructure --startup-project GestionEspaces.Api
+Set-Location .\GestionEspaces
+dotnet ef database update --project .\GestionEspaces.Infrastructure\GestionEspaces.Infrastructure.csproj --startup-project .\GestionEspaces.Api\GestionEspaces.Api.csproj
 ```
 
 ### 2. Launching the Backend API

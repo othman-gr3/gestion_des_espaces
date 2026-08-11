@@ -21,7 +21,7 @@ dotnet test GestionEspaces.IntegrationTests\GestionEspaces.IntegrationTests.cspr
 # 4. Start the API Local Development Server (Listening on ports defined in launchSettings.json)
 dotnet run --project GestionEspaces.Api\GestionEspaces.Api.csproj
 
-# 5. Database Schema Migrations (Run from solution root to update LocalDB)
+# 5. Database Schema Migrations (Run from solution root to update the configured SQL Server instance)
 dotnet ef database update `
   --project GestionEspaces.Infrastructure\GestionEspaces.Infrastructure.csproj `
   --startup-project GestionEspaces.Api\GestionEspaces.Api.csproj
