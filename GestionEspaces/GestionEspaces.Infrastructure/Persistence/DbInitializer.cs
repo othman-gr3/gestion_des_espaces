@@ -11,16 +11,9 @@ public static class DbInitializer
         // Apply migrations automatically just in case
         await context.Database.MigrateAsync();
 
-        // Clean slate to ensure the mock data is populated correctly
-        context.Reservations.RemoveRange(context.Reservations);
-        context.AffectationsActif.RemoveRange(context.AffectationsActif);
-        context.AffectationsPoste.RemoveRange(context.AffectationsPoste);
-        context.Actifs.RemoveRange(context.Actifs);
-        context.Agents.RemoveRange(context.Agents);
-        context.Bureaux.RemoveRange(context.Bureaux);
-        context.Batiments.RemoveRange(context.Batiments);
-        context.Sites.RemoveRange(context.Sites);
-        await context.SaveChangesAsync();
+        // Only seed an empty database — never wipe existing data
+        if (context.Sites.Any())
+            return;
 
         // 1. SITES
         var site1 = new Site(

@@ -83,7 +83,7 @@ public sealed class ReservationsController : ControllerBase
     }
 
     [HttpPost("{id:int}/annuler")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "Gestion")]
     public async Task<IActionResult> AnnulerAsync(int id, [FromBody] ConcurrencyTokenRequest request, CancellationToken cancellationToken)
     {
         var result = await _useCases.AnnulerAsync(id, request.ConcurrencyToken, cancellationToken);

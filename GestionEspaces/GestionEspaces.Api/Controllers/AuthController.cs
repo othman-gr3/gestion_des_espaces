@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace GestionEspaces.Api.Controllers;
@@ -21,19 +22,19 @@ public sealed class AuthController : ControllerBase
     public IActionResult Login([FromBody] LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-        {
             return BadRequest(new { detail = "L'adresse email et le mot de passe sont obligatoires." });
-        }
 
-        // Understated, simple dev logic:
-        // - if email contains "gestionnaire" or "admin", user gets "Gestionnaire" role.
-        // - otherwise user gets "Lecteur" role.
-        string role = request.Email.Contains("gestion") || request.Email.Contains("admin")
-            ? "Gestionnaire"
-            : "Lecteur";
+        // Look up user in configuration
+        var users = _configuration.GetSection("Users").Get<UserConfig[]>() ?? [];
+        var user = users.FirstOrDefault(u =>
+            string.Equals(u.Email, request.Email, StringComparison.OrdinalIgnoreCase));
+
+        if (user is null || !VerifyPassword(request.Password, user.PasswordHash))
+            return Unauthorized(new { detail = "Email ou mot de passe incorrect." });
 
         var jwtSection = _configuration.GetSection("Jwt");
-        var signingKey = jwtSection["SigningKey"] ?? "Dev-GestionEspaces-SuperSecretKey-32Chars!!";
+        var signingKey = jwtSection["SigningKey"]
+            ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
         var issuer = jwtSection["Issuer"] ?? "GestionEspaces";
         var audience = jwtSection["Audience"] ?? "GestionEspacesApi";
 
@@ -42,16 +43,16 @@ public sealed class AuthController : ControllerBase
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, request.Email),
-            new Claim(ClaimTypes.Name, request.Email.Split('@')[0]),
-            new Claim(ClaimTypes.Role, role)
+            new Claim(ClaimTypes.NameIdentifier, user.Email),
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Role, user.Role)
         };
 
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7), // Generous for local dev/testing
+            expires: DateTime.UtcNow.AddHours(8),
             signingCredentials: credentials);
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -59,11 +60,31 @@ public sealed class AuthController : ControllerBase
         return Ok(new
         {
             token = tokenString,
-            email = request.Email,
-            role = role,
-            name = request.Email.Split('@')[0]
+            email = user.Email,
+            role = user.Role,
+            name = user.Name
         });
+    }
+
+    // PBKDF2-SHA256 with 16-byte salt, 10 000 iterations, 32-byte hash
+    // Format stored in config: Base64( salt[16] || hash[32] )
+    private static bool VerifyPassword(string password, string storedHash)
+    {
+        try
+        {
+            var hashBytes = Convert.FromBase64String(storedHash);
+            if (hashBytes.Length != 48) return false;
+            var salt = hashBytes[..16];
+            var expected = hashBytes[16..];
+            var actual = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
+            return CryptographicOperations.FixedTimeEquals(actual, expected);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
 public sealed record LoginRequest(string Email, string Password);
+public sealed record UserConfig(string Email, string PasswordHash, string Role, string Name);
