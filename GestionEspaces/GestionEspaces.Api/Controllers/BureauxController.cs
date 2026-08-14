@@ -19,7 +19,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpGet("{idBureau:int}")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> GetByIdAsync(int idBureau, CancellationToken cancellationToken)
     {
         var result = await _bureauUseCases.GetByIdAsync(idBureau, cancellationToken);
@@ -27,7 +27,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> SearchAsync([FromQuery] int? idBatiment, [FromQuery] string? searchText, [FromQuery] StatutBureau? statut, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _bureauUseCases.SearchAsync(new SearchBureauxRequest(idBatiment, searchText, statut, pageNumber, pageSize), cancellationToken);
@@ -35,7 +35,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateBureauRequest request, CancellationToken cancellationToken)
     {
         var result = await _bureauUseCases.CreateAsync(request, cancellationToken);
@@ -43,7 +43,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpPut("{idBureau:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> UpdateAsync(int idBureau, [FromBody] UpdateBureauRequest request, CancellationToken cancellationToken)
     {
         var result = await _bureauUseCases.UpdateAsync(idBureau, request, cancellationToken);
@@ -51,7 +51,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpDelete("{idBureau:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> DeleteAsync(int idBureau, CancellationToken cancellationToken)
     {
         var result = await _bureauUseCases.DeleteAsync(idBureau, cancellationToken);

@@ -29,10 +29,10 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
     }
 
     [Fact]
-    public async Task Post_WithLecteurToken_Returns403()
+    public async Task Post_WithGestionnaireToken_Returns403()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         var response = await client.PostAsJsonAsync("/api/actifs", new
         {
@@ -54,7 +54,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
     public async Task CreateGetUpdateDelete_HappyPath()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         // 1. CREATE
         var createResponse = await client.PostAsJsonAsync("/api/actifs", new
@@ -78,7 +78,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
 
         // 2. GET by id (Lecteur can read)
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var getResponse = await client.GetAsync($"/api/actifs/{idActif}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -87,7 +87,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
 
         // 3. UPDATE (requires Gestionnaire + concurrency token)
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var updateResponse = await client.PutAsJsonAsync($"/api/actifs/{idActif}", new
         {
@@ -123,7 +123,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
     public async Task Update_WithStaleToken_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var createResponse = await client.PostAsJsonAsync("/api/actifs", new
         {
@@ -177,7 +177,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
     public async Task Search_ReturnsPaged()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         await client.PostAsJsonAsync("/api/actifs", new
         {
@@ -191,7 +191,7 @@ public sealed class ActifsCrudTests : IClassFixture<SqlServerFixture>
         });
 
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var searchResponse = await client.GetAsync("/api/actifs?searchText=Actif%20Recherche&pageNumber=1&pageSize=10");
         Assert.Equal(HttpStatusCode.OK, searchResponse.StatusCode);

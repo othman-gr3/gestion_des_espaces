@@ -13,7 +13,6 @@ const AppShell = () => {
     { name: 'Bâtiments & Bureaux', path: '/spaces' },
     { name: 'Agents', path: '/agents' },
     { name: 'Actifs', path: '/assets' },
-    { name: 'Réservations', path: '/reservations' },
   ];
 
   const handleLogout = () => {

@@ -96,12 +96,17 @@ public sealed class AffectationPosteTests : IClassFixture<SqlServerFixture>
     public async Task AssignAgent_HappyPath_ThenClose_ThenReassign()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idSite = await CreateSiteAsync(client, "AFP01");
         var idBatiment = await CreateBatimentAsync(client, idSite, "Bâtiment AFP");
         var idBureau = await CreateBureauAsync(client, idBatiment, "A-001");
         var idAgent = await CreateAgentAsync(client, "AFP-AGT-01");
+
+        // Assignment endpoints are shared between Administrateur and Gestionnaire —
+        // exercise them as Gestionnaire, which has no other referentiel rights.
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         // Assign agent to bureau — should succeed.
         var assignResponse = await client.PostAsJsonAsync($"/api/agents/{idAgent}/office-assignments", new
@@ -145,13 +150,16 @@ public sealed class AffectationPosteTests : IClassFixture<SqlServerFixture>
     public async Task AssignAgent_WhenAlreadyActive_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idSite = await CreateSiteAsync(client, "AFP02");
         var idBatiment = await CreateBatimentAsync(client, idSite, "Bâtiment AFP2");
         var idBureau1 = await CreateBureauAsync(client, idBatiment, "B-001");
         var idBureau2 = await CreateBureauAsync(client, idBatiment, "B-002");
         var idAgent = await CreateAgentAsync(client, "AFP-AGT-02");
+
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         // First assignment — succeeds.
         var first = await client.PostAsJsonAsync($"/api/agents/{idAgent}/office-assignments", new
@@ -178,13 +186,16 @@ public sealed class AffectationPosteTests : IClassFixture<SqlServerFixture>
     public async Task AssignTwoAgentsToSameBureau_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idSite = await CreateSiteAsync(client, "AFP03");
         var idBatiment = await CreateBatimentAsync(client, idSite, "Bâtiment AFP3");
         var idBureau = await CreateBureauAsync(client, idBatiment, "C-001");
         var idAgent1 = await CreateAgentAsync(client, "AFP-AGT-03");
         var idAgent2 = await CreateAgentAsync(client, "AFP-AGT-04");
+
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         var first = await client.PostAsJsonAsync($"/api/agents/{idAgent1}/office-assignments", new
         {

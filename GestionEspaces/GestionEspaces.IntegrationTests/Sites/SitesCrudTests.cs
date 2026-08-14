@@ -33,10 +33,10 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
     }
 
     [Fact]
-    public async Task Post_WithLecteurToken_Returns403()
+    public async Task Post_WithGestionnaireToken_Returns403()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         var response = await client.PostAsJsonAsync("/api/sites", new
         {
@@ -58,7 +58,7 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
     public async Task CreateGetUpdateDelete_HappyPath()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         // 1. CREATE
         var createResponse = await client.PostAsJsonAsync("/api/sites", new
@@ -80,18 +80,18 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
         Assert.True(idSite > 0);
         Assert.NotNull(token);
 
-        // 2. GET by id (Lecteur can read)
+        // 2. GET by id (Administrateur can read)
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var getResponse = await client.GetAsync($"/api/sites/{idSite}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
         var fetched = await getResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
         Assert.Equal("Site Intégration", fetched.GetProperty("nom").GetString());
 
-        // 3. UPDATE (requires Gestionnaire)
+        // 3. UPDATE (requires Administrateur)
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var updateResponse = await client.PutAsJsonAsync($"/api/sites/{idSite}", new
         {
@@ -127,7 +127,7 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
     public async Task Update_WithStaleToken_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         // Create the site.
         var createResponse = await client.PostAsJsonAsync("/api/sites", new
@@ -178,10 +178,10 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
     // ── Search ─────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task Search_WithLecteurToken_ReturnsPaged()
+    public async Task Search_WithAdministrateurToken_ReturnsPaged()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         // Seed a site.
         await client.PostAsJsonAsync("/api/sites", new
@@ -196,7 +196,7 @@ public sealed class SitesCrudTests : IClassFixture<SqlServerFixture>
         });
 
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var searchResponse = await client.GetAsync("/api/sites?searchText=Recherche&pageNumber=1&pageSize=10");
         Assert.Equal(HttpStatusCode.OK, searchResponse.StatusCode);

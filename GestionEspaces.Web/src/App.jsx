@@ -9,7 +9,6 @@ import Sites from './pages/Sites';
 import Spaces from './pages/Spaces';
 import Agents from './pages/Agents';
 import Assets from './pages/Assets';
-import Reservations from './pages/Reservations';
 
 function App() {
   return (
@@ -31,7 +30,6 @@ function App() {
             <Route path="spaces" element={<Spaces />} />
             <Route path="agents" element={<Agents />} />
             <Route path="assets" element={<Assets />} />
-            <Route path="reservations" element={<Reservations />} />
           </Route>
         </Routes>
       </Router>

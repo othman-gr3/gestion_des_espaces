@@ -27,8 +27,6 @@ public sealed class GestionEspacesDbContext : DbContext
 
     public DbSet<AffectationActif> AffectationsActif => Set<AffectationActif>();
 
-    public DbSet<Reservation> Reservations => Set<Reservation>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GestionEspacesDbContext).Assembly);

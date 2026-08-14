@@ -56,6 +56,8 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
         // 4. AGENTS
+        // agent1's email matches the "Agent" test login account in appsettings.json (Users section),
+        // so the self-service /api/agents/me/office and /me/assets endpoints resolve to this record.
         var agent1 = new Agent("El Amrani", "Youssef", "ONE-4521", "y.elamrani@onee.ma", "0661234501", "Directeur Régional", "Direction Régionale Casablanca", new DateTime(2010, 3, 15), "agent1.jpg");
         var agent2 = new Agent("Benjelloun", "Salma", "ONE-4877", "s.benjelloun@onee.ma", "0661234502", "Responsable Ressources Humaines", "Direction Ressources Humaines", new DateTime(2013, 9, 1), "agent2.jpg");
         var agent3 = new Agent("Tazi", "Karim", "ONE-5102", "k.tazi@onee.ma", "0661234503", "Ingénieur Réseau", "Direction Exploitation", new DateTime(2016, 1, 20), "agent3.jpg");

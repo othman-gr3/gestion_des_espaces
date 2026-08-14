@@ -18,7 +18,7 @@ public sealed class BatimentsController : ControllerBase
     }
 
     [HttpGet("{idBatiment:int}")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> GetByIdAsync(int idBatiment, CancellationToken cancellationToken)
     {
         var result = await _batimentUseCases.GetByIdAsync(idBatiment, cancellationToken);
@@ -26,7 +26,7 @@ public sealed class BatimentsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> SearchAsync([FromQuery] int? idSite, [FromQuery] string? searchText, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _batimentUseCases.SearchAsync(new SearchBatimentsRequest(idSite, searchText, pageNumber, pageSize), cancellationToken);
@@ -34,7 +34,7 @@ public sealed class BatimentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateBatimentRequest request, CancellationToken cancellationToken)
     {
         var result = await _batimentUseCases.CreateAsync(request, cancellationToken);
@@ -42,7 +42,7 @@ public sealed class BatimentsController : ControllerBase
     }
 
     [HttpPut("{idBatiment:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> UpdateAsync(int idBatiment, [FromBody] UpdateBatimentRequest request, CancellationToken cancellationToken)
     {
         var result = await _batimentUseCases.UpdateAsync(idBatiment, request, cancellationToken);
@@ -50,7 +50,7 @@ public sealed class BatimentsController : ControllerBase
     }
 
     [HttpDelete("{idBatiment:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> DeleteAsync(int idBatiment, CancellationToken cancellationToken)
     {
         var result = await _batimentUseCases.DeleteAsync(idBatiment, cancellationToken);

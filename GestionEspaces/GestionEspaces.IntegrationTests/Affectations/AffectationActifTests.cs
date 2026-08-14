@@ -63,10 +63,15 @@ public sealed class AffectationActifTests : IClassFixture<SqlServerFixture>
     public async Task AssignActif_HappyPath_ThenClose_ThenReassign()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idAgent = await CreateAgentAsync(client, "AFA-AGT-01");
         var idActif = await CreateActifAsync(client, "Laptop AFA Test", "SN-AFA-001");
+
+        // Assignment endpoints are shared between Administrateur and Gestionnaire —
+        // exercise them as Gestionnaire, which has no other referentiel rights.
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         // Assign actif to agent — should succeed.
         var assignResponse = await client.PostAsJsonAsync($"/api/agents/{idAgent}/asset-assignments", new
@@ -110,11 +115,14 @@ public sealed class AffectationActifTests : IClassFixture<SqlServerFixture>
     public async Task AssignActif_WhenAlreadyAssigned_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idAgent1 = await CreateAgentAsync(client, "AFA-AGT-02");
         var idAgent2 = await CreateAgentAsync(client, "AFA-AGT-03");
         var idActif = await CreateActifAsync(client, "Actif Conflit Actif", "SN-AFA-002");
+
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         // Assign to first agent — succeeds.
         var first = await client.PostAsJsonAsync($"/api/agents/{idAgent1}/asset-assignments", new

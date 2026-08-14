@@ -4,6 +4,7 @@ using GestionEspaces.Application.DTOs.Assignments;
 using GestionEspaces.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GestionEspaces.Api.Controllers;
 
@@ -15,6 +16,7 @@ namespace GestionEspaces.Api.Controllers;
 public sealed class AgentsController : ControllerBase
 {
     private readonly AgentUseCases _agentUseCases;
+    private readonly AgentSelfServiceUseCase _agentSelfServiceUseCase;
     private readonly AssignAgentToOfficeUseCase _assignAgentToOfficeUseCase;
     private readonly AssignAssetToAgentUseCase _assignAssetToAgentUseCase;
     private readonly CloseAffectationPosteUseCase _closePosteUseCase;
@@ -23,6 +25,7 @@ public sealed class AgentsController : ControllerBase
 
     public AgentsController(
         AgentUseCases agentUseCases,
+        AgentSelfServiceUseCase agentSelfServiceUseCase,
         AssignAgentToOfficeUseCase assignAgentToOfficeUseCase,
         AssignAssetToAgentUseCase assignAssetToAgentUseCase,
         CloseAffectationPosteUseCase closePosteUseCase,
@@ -30,6 +33,7 @@ public sealed class AgentsController : ControllerBase
         QueryAffectationsUseCase queryAffectationsUseCase)
     {
         _agentUseCases = agentUseCases;
+        _agentSelfServiceUseCase = agentSelfServiceUseCase;
         _assignAgentToOfficeUseCase = assignAgentToOfficeUseCase;
         _assignAssetToAgentUseCase = assignAssetToAgentUseCase;
         _closePosteUseCase = closePosteUseCase;
@@ -40,7 +44,7 @@ public sealed class AgentsController : ControllerBase
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
     [HttpGet("{idAgent:int}")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> GetByIdAsync(int idAgent, CancellationToken cancellationToken)
     {
         var result = await _agentUseCases.GetByIdAsync(idAgent, cancellationToken);
@@ -48,7 +52,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> SearchAsync(
         [FromQuery] string? searchText,
         [FromQuery] int pageNumber = 1,
@@ -60,7 +64,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateAgentRequest request, CancellationToken cancellationToken)
     {
         var result = await _agentUseCases.CreateAsync(request, cancellationToken);
@@ -68,7 +72,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpPut("{idAgent:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> UpdateAsync(int idAgent, [FromBody] UpdateAgentRequest request, CancellationToken cancellationToken)
     {
         var result = await _agentUseCases.UpdateAsync(idAgent, request, cancellationToken);
@@ -76,17 +80,47 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpDelete("{idAgent:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> DeleteAsync(int idAgent, CancellationToken cancellationToken)
     {
         var result = await _agentUseCases.DeleteAsync(idAgent, cancellationToken);
         return this.ToActionResult(result);
     }
 
+    // ── Self-service (Agent role) ───────────────────────────────────────────────
+
+    [HttpGet("me/office")]
+    [Authorize(Policy = "LectureAgent")]
+    public async Task<IActionResult> GetMyOfficeAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.GetMyOfficeAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpGet("me/assets")]
+    [Authorize(Policy = "LectureAgent")]
+    public async Task<IActionResult> GetMyAssetsAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.GetMyAssetsAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
     // ── Office assignments ────────────────────────────────────────────────────
 
     [HttpGet("{agentId:int}/office-assignments")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> GetOfficeAssignmentsAsync(int agentId, CancellationToken cancellationToken)
     {
         var result = await _queryAffectationsUseCase.GetPostesForAgentAsync(agentId, cancellationToken);
@@ -94,7 +128,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpPost("{agentId:int}/office-assignments")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> AssignAgentToOfficeAsync(int agentId, [FromBody] AssignAgentToOfficeRequest request, CancellationToken cancellationToken)
     {
         var command = request with { AgentId = agentId };
@@ -103,7 +137,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpDelete("{agentId:int}/office-assignments/{affId:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> CloseOfficeAssignmentAsync(int agentId, int affId, [FromBody] CloseAffectationRequest request, CancellationToken cancellationToken)
     {
         var result = await _closePosteUseCase.ExecuteAsync(agentId, affId, request, cancellationToken);
@@ -113,7 +147,7 @@ public sealed class AgentsController : ControllerBase
     // ── Asset assignments ─────────────────────────────────────────────────────
 
     [HttpGet("{agentId:int}/asset-assignments")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> GetAssetAssignmentsAsync(int agentId, CancellationToken cancellationToken)
     {
         var result = await _queryAffectationsUseCase.GetActifsForAgentAsync(agentId, cancellationToken);
@@ -121,7 +155,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpPost("{agentId:int}/asset-assignments")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> AssignAssetToAgentAsync(int agentId, [FromBody] AssignAssetToAgentRequest request, CancellationToken cancellationToken)
     {
         var command = request with { AgentId = agentId };
@@ -130,7 +164,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpDelete("{agentId:int}/asset-assignments/{affId:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "GestionAffectations")]
     public async Task<IActionResult> CloseAssetAssignmentAsync(int agentId, int affId, [FromBody] CloseAffectationRequest request, CancellationToken cancellationToken)
     {
         var result = await _closeActifUseCase.ExecuteAsync(agentId, affId, request, cancellationToken);

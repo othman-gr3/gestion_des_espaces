@@ -25,6 +25,12 @@ public sealed class AgentRepository : IAgentRepository
             .SingleOrDefaultAsync(agent => agent.IdAgent == idAgent, cancellationToken);
     }
 
+    public Task<Agent?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    {
+        return _dbContext.Agents
+            .SingleOrDefaultAsync(agent => agent.Email != null && agent.Email.ToLower() == email.ToLower(), cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Agent>> SearchAsync(string? searchText, int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
         var query = BuildQuery(searchText);

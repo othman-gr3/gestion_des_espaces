@@ -31,15 +31,19 @@ builder.Services
     });
 
 // ── Authorization Policies ──────────────────────────────────────────────────
-// Lecteur  → can read (GET endpoints)
-// Gestionnaire → can mutate (POST / PUT / DELETE endpoints)
+// Administrateur → full CRUD on the referentiel (Sites, Batiments, Bureaux, Agents, Actifs)
+// Gestionnaire   → creates/closes Affectation_Poste and Affectation_Actif, no referentiel access
+// Agent          → reads only their own data (current office, assigned assets)
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Lecture", policy =>
-        policy.RequireRole("Lecteur", "Gestionnaire"));
+    options.AddPolicy("ReferentielAdmin", policy =>
+        policy.RequireRole("Administrateur"));
 
-    options.AddPolicy("Gestion", policy =>
-        policy.RequireRole("Gestionnaire"));
+    options.AddPolicy("GestionAffectations", policy =>
+        policy.RequireRole("Administrateur", "Gestionnaire"));
+
+    options.AddPolicy("LectureAgent", policy =>
+        policy.RequireRole("Agent"));
 });
 
 builder.Services.AddCors(options =>

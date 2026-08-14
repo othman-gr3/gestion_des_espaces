@@ -18,7 +18,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpGet("{idSite:int}")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> GetByIdAsync(int idSite, CancellationToken cancellationToken)
     {
         var result = await _siteUseCases.GetByIdAsync(idSite, cancellationToken);
@@ -26,7 +26,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> SearchAsync([FromQuery] string? searchText, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _siteUseCases.SearchAsync(new SearchSitesRequest(searchText, pageNumber, pageSize), cancellationToken);
@@ -34,7 +34,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateSiteRequest request, CancellationToken cancellationToken)
     {
         var result = await _siteUseCases.CreateAsync(request, cancellationToken);
@@ -42,7 +42,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpPut("{idSite:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> UpdateAsync(int idSite, [FromBody] UpdateSiteRequest request, CancellationToken cancellationToken)
     {
         var result = await _siteUseCases.UpdateAsync(idSite, request, cancellationToken);
@@ -50,7 +50,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpDelete("{idSite:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> DeleteAsync(int idSite, CancellationToken cancellationToken)
     {
         var result = await _siteUseCases.DeleteAsync(idSite, cancellationToken);

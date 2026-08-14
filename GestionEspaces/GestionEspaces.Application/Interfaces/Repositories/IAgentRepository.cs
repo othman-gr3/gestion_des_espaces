@@ -9,6 +9,8 @@ public interface IAgentRepository
 {
     Task<Agent?> GetByIdAsync(int idAgent, CancellationToken cancellationToken);
 
+    Task<Agent?> GetByEmailAsync(string email, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<Agent>> SearchAsync(string? searchText, int pageNumber, int pageSize, CancellationToken cancellationToken);
 
     Task<int> CountAsync(string? searchText, CancellationToken cancellationToken);

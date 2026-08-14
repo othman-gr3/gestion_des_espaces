@@ -150,8 +150,9 @@ const Login = () => {
             className="mt-8 border-t border-border-subtle pt-5 text-[12px] text-text-secondary space-y-1.5"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
-            <div><span className="text-primary font-medium">Rôle Gestionnaire</span> — adresse contenant "gestion"</div>
-            <div><span className="text-text-primary font-medium">Rôle Lecteur</span> — toute autre adresse</div>
+            <div><span className="text-primary font-medium">Administrateur</span> — référentiel complet</div>
+            <div><span className="text-text-primary font-medium">Gestionnaire</span> — affectations postes/actifs</div>
+            <div><span className="text-text-primary font-medium">Agent</span> — consultation de ses propres données</div>
           </div>
         </div>
       </div>

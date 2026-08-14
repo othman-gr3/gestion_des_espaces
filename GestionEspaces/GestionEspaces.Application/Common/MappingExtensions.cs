@@ -4,7 +4,6 @@ using GestionEspaces.Application.DTOs.Actifs;
 using GestionEspaces.Application.DTOs.Batiments;
 using GestionEspaces.Application.DTOs.Bureaux;
 using GestionEspaces.Application.DTOs.Sites;
-using GestionEspaces.Application.DTOs.Reservations;
 using GestionEspaces.Domain.Entities;
 
 namespace GestionEspaces.Application.Common;
@@ -98,14 +97,4 @@ public static class MappingExtensions
         actif.DateAchat,
         actif.Etat,
         actif.Image);
-
-    public static ReservationDto ToDto(this Reservation r) => new(
-        r.IdReservation,
-        r.Version.Length > 0 ? Convert.ToBase64String(r.Version) : null,
-        r.IdBureau,
-        r.IdAgent,
-        r.DateDebut,
-        r.DateFin,
-        r.Statut.ToString(),
-        r.Motif);
 }

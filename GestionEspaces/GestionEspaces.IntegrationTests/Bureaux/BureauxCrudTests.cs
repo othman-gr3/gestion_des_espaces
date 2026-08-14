@@ -84,10 +84,10 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
     }
 
     [Fact]
-    public async Task CreateBureau_WithLecteurToken_Returns403()
+    public async Task CreateBureau_WithGestionnaireToken_Returns403()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
         var response = await client.PostAsJsonAsync("/api/bureaux", new
         {
@@ -109,7 +109,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
     public async Task CreateGetUpdateDelete_Bureau_HappyPath()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idSite = await CreateSiteAsync(client, "BRX01");
         var (idBatiment, _) = await CreateBatimentAsync(client, idSite, "Bâtiment A");
@@ -120,7 +120,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
 
         // GET
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Lecteur));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var getResponse = await client.GetAsync($"/api/bureaux/{idBureau}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -129,7 +129,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
 
         // UPDATE — set to EnMaintenance
         client.DefaultRequestHeaders.Remove("Authorization");
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var updateResponse = await client.PutAsJsonAsync($"/api/bureaux/{idBureau}", new
         {
@@ -162,7 +162,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
     public async Task Update_Bureau_WithStaleToken_Returns409()
     {
         var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
 
         var idSite = await CreateSiteAsync(client, "BRX02");
         var (idBatiment, _) = await CreateBatimentAsync(client, idSite, "Bâtiment B");

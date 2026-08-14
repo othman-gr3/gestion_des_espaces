@@ -235,6 +235,8 @@ Request DTO ──> Validator (FluentValidation) ──> Fetch from Repository �
    * `ExecuteAsync(AssignAgentToOfficeRequest)`: Validates references, runs the domain assignment rules, updates state, and saves.
 6. **`AssignAssetToAgentUseCase`**
    * `ExecuteAsync(AssignAssetToAgentRequest)`: Validates references, checks if asset state is available, runs assignment invariants, and saves.
+7. **`AgentSelfServiceUseCase`**
+   * `GetMyOfficeAsync(email)` / `GetMyAssetsAsync(email)`: Resolves the calling Agent by the email carried in their JWT identity claim, then returns only their own active office assignment and assigned assets.
 
 ### Validator Constraints (FluentValidation)
 
@@ -277,14 +279,27 @@ Catches unhandled errors globally and converts them into standardized **RFC 7807
 
 ## 7. Role-Based Access Control (RBAC)
 
-The REST API implements JSON Web Token (JWT) Bearer authentication to secure access:
+The REST API implements JSON Web Token (JWT) Bearer authentication to secure access. There are exactly three roles, matching the three actors of the validated spec:
+
+* **Administrateur**: manages the full referentiel (Sites, Batiments, Bureaux, Agents, Actifs) and views the global dashboard.
+* **Gestionnaire**: handles day-to-day assignments — creates and closes `AffectationPoste` and `AffectationActif` records. No rights on the referentiel itself.
+* **Agent**: read-only access to their own data (current office, assigned assets), resolved from the JWT identity claim — never from an id in the URL.
 
 ### Role Privileges
 
-| Route Verb | Required Policy | Permitted Roles | Description |
+| Endpoints | Required Policy | Permitted Roles | Description |
 |---|---|---|---|
-| `GET` | `Lecture` | `Lecteur`, `Gestionnaire` | Allows query and read actions |
-| `POST`, `PUT`, `DELETE` | `Gestion` | `Gestionnaire` | Restricts write and delete actions |
+| Sites, Batiments, Bureaux, Agents, Actifs — full CRUD | `ReferentielAdmin` | `Administrateur` | Full read/write access to the referentiel |
+| `POST`/`DELETE` on `AffectationPoste` and `AffectationActif` (via `AgentsController`) | `GestionAffectations` | `Administrateur`, `Gestionnaire` | Create and close office/asset assignments |
+| `GET /api/agents/me/office`, `GET /api/agents/me/assets` | `LectureAgent` | `Agent` | Self-service — returns only the caller's own office/assets |
+
+### Test Accounts (seeded in `appsettings.json` → `Users`, matched by email)
+
+| Email | Role | Password | Notes |
+|---|---|---|---|
+| `admin@onee.ma` | `Administrateur` | `Admin123!` | Full referentiel access |
+| `gestionnaire@onee.ma` | `Gestionnaire` | `Gestion123!` | Assignment management only |
+| `y.elamrani@onee.ma` | `Agent` | `Agent123!` | Linked to the seeded `Agent` record "Youssef El Amrani" (`DbInitializer.cs`), which has an active office and asset assignments for self-service testing |
 
 ### JWT Verification Pipeline
 
@@ -359,7 +374,7 @@ Tests the entire HTTP stack and SQL database integration using actual containers
 
 #### Integration Test Scenarios
 
-1. **Security Checks**: Ensures calling protected endpoints without a token returns `401 Unauthorized`, and using a token with the wrong role returns `403 Forbidden`.
+1. **Security Checks**: Ensures calling protected endpoints without a token returns `401 Unauthorized`, and using a token with the wrong role returns `403 Forbidden`. `Authorization/RoleBasedAccessTests.cs` covers the 3-role RBAC model specifically: `Agent` gets `403` on referentiel CRUD, `Gestionnaire` gets `403` on Administrateur-only CRUD, and `Agent` self-service endpoints return `200 OK` scoped strictly to the caller's own data.
 2. **CRUD Flow Validation**: Tests creating a resource, querying it to verify persistence, updating properties, and deleting it, checking for correct HTTP status codes throughout.
 3. **Concurrency Conflict Verification**: Creates a record, triggers an update to increment the version, and then attempts a second update with the initial stale token to verify that the system returns the expected `409 Conflict`.
 4. **Search and Pagination**: Verifies query filters and pagination page counts work as expected.

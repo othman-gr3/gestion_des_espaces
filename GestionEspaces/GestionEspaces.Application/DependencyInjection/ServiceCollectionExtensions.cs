@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddValidatorsFromAssemblyContaining<CreateAgentRequestValidator>();
 
         services.AddScoped<AgentUseCases>();
+        services.AddScoped<AgentSelfServiceUseCase>();
         services.AddScoped<AssignAgentToOfficeUseCase>();
         services.AddScoped<AssignAssetToAgentUseCase>();
         services.AddScoped<CloseAffectationPosteUseCase>();
@@ -26,7 +27,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BatimentUseCases>();
         services.AddScoped<BureauUseCases>();
         services.AddScoped<ActifUseCases>();
-        services.AddScoped<ReservationUseCases>();
 
         return services;
     }

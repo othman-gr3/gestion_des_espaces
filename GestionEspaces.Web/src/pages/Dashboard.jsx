@@ -4,20 +4,20 @@ import useAuth from '../hooks/useAuth';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ sites: 0, agents: 0, reservations: 0 });
+  const [stats, setStats] = useState({ sites: 0, agents: 0, actifs: 0 });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [sitesRes, agentsRes, reservationsRes] = await Promise.all([
+        const [sitesRes, agentsRes, actifsRes] = await Promise.all([
           api.get('/sites?pageSize=1'),
           api.get('/agents?pageSize=1'),
-          api.get('/reservations?pageSize=1'),
+          api.get('/actifs?pageSize=1'),
         ]);
         setStats({
           sites: sitesRes.data.totalCount || 0,
           agents: agentsRes.data.totalCount || 0,
-          reservations: reservationsRes.data.totalCount || 0,
+          actifs: actifsRes.data.totalCount || 0,
         });
       } catch (error) {
         console.error('Error loading dashboard stats:', error);
@@ -67,9 +67,9 @@ const Dashboard = () => {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-px sm:grid-cols-3 bg-border-subtle border border-border-subtle">
-        <StatCard value={stats.sites}        label="Sites d'implantation"       tag="Sites gérés" />
-        <StatCard value={stats.agents}       label="Agents référencés"          tag="Agents enregistrés" />
-        <StatCard value={stats.reservations} label="Réservations enregistrées"  tag="Réservations actives" />
+        <StatCard value={stats.sites}  label="Sites d'implantation"  tag="Sites gérés" />
+        <StatCard value={stats.agents} label="Agents référencés"     tag="Agents enregistrés" />
+        <StatCard value={stats.actifs} label="Actifs inventoriés"    tag="Actifs enregistrés" />
       </div>
 
       {/* Quick actions */}
@@ -82,7 +82,7 @@ const Dashboard = () => {
             { href: '/sites',        title: 'Gérer les sites',              desc: 'Consulter, créer ou mettre à jour les implantations géographiques' },
             { href: '/spaces',       title: 'Bâtiments & bureaux',          desc: 'Gérer le parc de bureaux, leurs capacités et statuts opérationnels' },
             { href: '/agents',       title: 'Agents',                       desc: 'Fiche agents, affectations de postes et attribution de matériel' },
-            { href: '/reservations', title: 'Réservations en attente',      desc: 'Valider ou rejeter les demandes de créneaux horaires déposées' },
+            { href: '/assets',       title: 'Actifs',                       desc: 'Suivre le parc d\'équipements et leur affectation aux agents' },
           ].map((item) => (
             <a
               key={item.href}

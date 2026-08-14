@@ -19,7 +19,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpGet("{idActif:int}")]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> GetByIdAsync(int idActif, CancellationToken cancellationToken)
     {
         var result = await _actifUseCases.GetByIdAsync(idActif, cancellationToken);
@@ -27,7 +27,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "Lecture")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> SearchAsync([FromQuery] string? searchText, [FromQuery] EtatActif? etat, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _actifUseCases.SearchAsync(new SearchActifsRequest(searchText, etat, pageNumber, pageSize), cancellationToken);
@@ -35,7 +35,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> CreateAsync([FromBody] CreateActifRequest request, CancellationToken cancellationToken)
     {
         var result = await _actifUseCases.CreateAsync(request, cancellationToken);
@@ -43,7 +43,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpPut("{idActif:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> UpdateAsync(int idActif, [FromBody] UpdateActifRequest request, CancellationToken cancellationToken)
     {
         var result = await _actifUseCases.UpdateAsync(idActif, request, cancellationToken);
@@ -51,7 +51,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpDelete("{idActif:int}")]
-    [Authorize(Policy = "Gestion")]
+    [Authorize(Policy = "ReferentielAdmin")]
     public async Task<IActionResult> DeleteAsync(int idActif, CancellationToken cancellationToken)
     {
         var result = await _actifUseCases.DeleteAsync(idActif, cancellationToken);

@@ -18,21 +18,30 @@ public static class AuthHelper
     /// <summary>Roles accepted by the API.</summary>
     public static class Roles
     {
-        public const string Lecteur = "Lecteur";
+        public const string Administrateur = "Administrateur";
         public const string Gestionnaire = "Gestionnaire";
+        public const string Agent = "Agent";
     }
 
     /// <summary>
-    /// Creates a Bearer authorization header value for the given role.
+    /// Creates a Bearer authorization header value for the given role, using a
+    /// generic "test-user" identity claim.
     /// </summary>
-    public static string BearerFor(string role)
+    public static string BearerFor(string role) => BearerFor(role, "test-user");
+
+    /// <summary>
+    /// Creates a Bearer authorization header value for the given role, with the
+    /// NameIdentifier claim set to <paramref name="email"/>. Used for Agent
+    /// self-service tests, where the API resolves the agent by this claim.
+    /// </summary>
+    public static string BearerFor(string role, string email)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSigningKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "test-user"),
+            new Claim(ClaimTypes.NameIdentifier, email),
             new Claim(ClaimTypes.Name, "Test User"),
             new Claim(ClaimTypes.Role, role)
         };

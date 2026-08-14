@@ -122,6 +122,12 @@ public class UseCaseTests
             return Task.FromResult(agent);
         }
 
+        public Task<Agent?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+        {
+            var agent = _agents.Values.SingleOrDefault(a => string.Equals(a.Email, email, StringComparison.OrdinalIgnoreCase));
+            return Task.FromResult(agent);
+        }
+
         public Task<bool> ExistsByMatriculeAsync(string matricule, CancellationToken cancellationToken)
         {
             return Task.FromResult(_agents.Values.Any(agent => agent.Matricule == matricule));
