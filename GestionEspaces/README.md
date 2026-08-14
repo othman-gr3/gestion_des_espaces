@@ -21,7 +21,7 @@ dotnet test GestionEspaces.IntegrationTests\GestionEspaces.IntegrationTests.cspr
 # 4. Start the API Local Development Server (Listening on ports defined in launchSettings.json)
 dotnet run --project GestionEspaces.Api\GestionEspaces.Api.csproj
 
-# 5. Database Schema Migrations (Run from solution root to update LocalDB)
+# 5. Database Schema Migrations (Run from solution root to update the configured SQL Server instance)
 dotnet ef database update `
   --project GestionEspaces.Infrastructure\GestionEspaces.Infrastructure.csproj `
   --startup-project GestionEspaces.Api\GestionEspaces.Api.csproj
@@ -302,9 +302,7 @@ The REST API implements JSON Web Token (JWT) Bearer authentication to secure acc
 | `gestionnaire@onee.ma` | `Gestionnaire` | `Gestion123!` | Assignment management only |
 | `y.elamrani@onee.ma` | `Agent` | `Agent123!` | Linked to the seeded `Agent` record "Youssef El Amrani" (`DbInitializer.cs`), which has an active office and asset assignments for self-service testing |
 
-### Known Limitation: No Agent-Facing Frontend Yet
-
-The `/api/agents/me/office` and `/api/agents/me/assets` endpoints are fully implemented and verified (both automated tests and manual API calls), but `GestionEspaces.Web` has no page consuming them yet. Logging in as `Agent` currently lands on the Admin `Dashboard`, which calls `/api/sites`, `/api/batiments`, `/api/bureaux` — all `Administrateur`-only — resulting in `403` responses. The frontend's global Axios response interceptor (`services/api.js`) treats any `403` as an expired session and force-logs-out, so an Agent login currently bounces straight back to `/login`. Building an Agent-facing "my office / my assets" page and adjusting that interceptor is a follow-up task, not yet done.
+The frontend now has role-scoped landing pages and navigation: `Administrateur` lands on the `Dashboard`, `Gestionnaire` on `Rechercher un bureau`, and `Agent` on `Mon bureau` — each role only ever sees sidebar entries and routes it has API access to, so the earlier 403-triggered logout loop no longer occurs. See `GestionEspaces.Web/src/App.jsx` and `AppShell.jsx` for the routing/navigation groups.
 
 ### JWT Verification Pipeline
 
