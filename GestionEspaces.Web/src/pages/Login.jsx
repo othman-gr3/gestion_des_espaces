@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import oneeLogo from '../assets/logo-onee.png';
+import oneePic from '../assets/onee-pic.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -37,8 +39,11 @@ const Login = () => {
     <div className="flex min-h-screen w-screen overflow-hidden bg-neutral-bg">
       {/* Left panel — institutional identity, kept compact */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[30%] bg-primary p-10 border-t-4 border-accent"
-        style={{ fontFamily: 'var(--font-display)' }}
+        className="hidden lg:flex flex-col justify-between w-[30%] p-10 border-t-4 border-accent bg-cover bg-center"
+        style={{
+          fontFamily: 'var(--font-display)',
+          backgroundImage: `linear-gradient(180deg, rgba(27,79,140,0.88) 0%, rgba(18,58,102,0.96) 100%), url(${oneePic})`,
+        }}
       >
         <div>
           <div
@@ -62,17 +67,11 @@ const Login = () => {
 
       {/* Right panel — form */}
       <div className="flex flex-1 flex-col justify-center px-8 sm:px-16 lg:px-20">
-        {/* Mobile header */}
-        <div className="mb-8 lg:hidden">
-          <div className="text-[10px] text-accent tracking-[0.22em] uppercase mb-1" style={{ fontFamily: 'var(--font-mono)' }}>
-            Portail administratif
-          </div>
-          <h1 className="text-2xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
-            GestionEspaces
-          </h1>
-        </div>
-
         <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <img src={oneeLogo} alt="ONEE" className="h-20 w-auto mb-6" />
+          </div>
+
           <div className="mb-7 border-b border-border-subtle pb-5">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-[3px] h-4 bg-primary flex-shrink-0" />
