@@ -289,7 +289,8 @@ The REST API implements JSON Web Token (JWT) Bearer authentication to secure acc
 
 | Endpoints | Required Policy | Permitted Roles | Description |
 |---|---|---|---|
-| Sites, Batiments, Bureaux, Agents, Actifs — full CRUD | `ReferentielAdmin` | `Administrateur` | Full read/write access to the referentiel |
+| `GET` on Sites, Batiments, Bureaux, Agents, Actifs | `ReferentielLecture` | `Administrateur`, `Gestionnaire` | Read-only referentiel access — Gestionnaire needs this to search/select agents, bureaux and actifs when creating assignments |
+| `POST`/`PUT`/`DELETE` on Sites, Batiments, Bureaux, Agents, Actifs | `ReferentielAdmin` | `Administrateur` | Full write access to the referentiel |
 | `POST`/`DELETE` on `AffectationPoste` and `AffectationActif` (via `AgentsController`) | `GestionAffectations` | `Administrateur`, `Gestionnaire` | Create and close office/asset assignments |
 | `GET /api/agents/me/office`, `GET /api/agents/me/assets` | `LectureAgent` | `Agent` | Self-service — returns only the caller's own office/assets |
 

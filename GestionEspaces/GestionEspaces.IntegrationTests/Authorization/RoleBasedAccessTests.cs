@@ -166,14 +166,48 @@ public sealed class RoleBasedAccessTests : IClassFixture<SqlServerFixture>
     }
 
     [Fact]
-    public async Task Gestionnaire_GetActifs_Returns403()
+    public async Task Gestionnaire_PutActifs_Returns403()
+    {
+        var client = _fixture.CreateClient();
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
+
+        var idActif = await CreateActifAsync(client, "Actif RBAC PUT", "SN-RBAC-PUT-01");
+
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
+
+        var response = await client.PutAsJsonAsync($"/api/actifs/{idActif}", new
+        {
+            concurrencyToken = (string?)null,
+            nom = "Modifié",
+            type = "Ordinateur",
+            marque = "Dell",
+            modele = "XPS",
+            numeroSerie = "SN-RBAC-PUT-01",
+            dateAchat = (DateTime?)null,
+            image = (string?)null,
+            etat = 0
+        });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    // ── Gestionnaire role: read-only referentiel access allowed (needed to search/select) ─
+
+    [Fact]
+    public async Task Gestionnaire_GetActifsAndBureaux_Returns200()
     {
         var client = _fixture.CreateClient();
         client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Gestionnaire));
 
-        var response = await client.GetAsync("/api/actifs");
+        var actifsResponse = await client.GetAsync("/api/actifs");
+        Assert.Equal(HttpStatusCode.OK, actifsResponse.StatusCode);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var bureauxResponse = await client.GetAsync("/api/bureaux");
+        Assert.Equal(HttpStatusCode.OK, bureauxResponse.StatusCode);
+
+        var agentsResponse = await client.GetAsync("/api/agents");
+        Assert.Equal(HttpStatusCode.OK, agentsResponse.StatusCode);
     }
 
     // ── Agent self-service: 200 OK, scoped to caller's own data ────────────────

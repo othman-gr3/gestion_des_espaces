@@ -19,7 +19,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpGet("{idBureau:int}")]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> GetByIdAsync(int idBureau, CancellationToken cancellationToken)
     {
         var result = await _bureauUseCases.GetByIdAsync(idBureau, cancellationToken);
@@ -27,7 +27,7 @@ public sealed class BureauxController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> SearchAsync([FromQuery] int? idBatiment, [FromQuery] string? searchText, [FromQuery] StatutBureau? statut, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _bureauUseCases.SearchAsync(new SearchBureauxRequest(idBatiment, searchText, statut, pageNumber, pageSize), cancellationToken);

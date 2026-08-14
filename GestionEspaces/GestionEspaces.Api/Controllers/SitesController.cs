@@ -18,7 +18,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpGet("{idSite:int}")]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> GetByIdAsync(int idSite, CancellationToken cancellationToken)
     {
         var result = await _siteUseCases.GetByIdAsync(idSite, cancellationToken);
@@ -26,7 +26,7 @@ public sealed class SitesController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> SearchAsync([FromQuery] string? searchText, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _siteUseCases.SearchAsync(new SearchSitesRequest(searchText, pageNumber, pageSize), cancellationToken);
@@ -56,4 +56,4 @@ public sealed class SitesController : ControllerBase
         var result = await _siteUseCases.DeleteAsync(idSite, cancellationToken);
         return this.ToActionResult(result);
     }
-}
+}

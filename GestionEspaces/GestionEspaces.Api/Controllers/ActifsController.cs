@@ -19,7 +19,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpGet("{idActif:int}")]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> GetByIdAsync(int idActif, CancellationToken cancellationToken)
     {
         var result = await _actifUseCases.GetByIdAsync(idActif, cancellationToken);
@@ -27,7 +27,7 @@ public sealed class ActifsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> SearchAsync([FromQuery] string? searchText, [FromQuery] EtatActif? etat, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _actifUseCases.SearchAsync(new SearchActifsRequest(searchText, etat, pageNumber, pageSize), cancellationToken);

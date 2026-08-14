@@ -44,7 +44,7 @@ public sealed class AgentsController : ControllerBase
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
     [HttpGet("{idAgent:int}")]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> GetByIdAsync(int idAgent, CancellationToken cancellationToken)
     {
         var result = await _agentUseCases.GetByIdAsync(idAgent, cancellationToken);
@@ -52,7 +52,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "ReferentielAdmin")]
+    [Authorize(Policy = "ReferentielLecture")]
     public async Task<IActionResult> SearchAsync(
         [FromQuery] string? searchText,
         [FromQuery] int pageNumber = 1,
