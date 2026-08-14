@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import useAuth from '../hooks/useAuth';
+import Breadcrumb from '../components/Breadcrumb';
+import Drawer from '../components/Drawer';
+import StatusBadge from '../components/StatusBadge';
+import Pagination from '../components/Pagination';
+import SortableTh from '../components/SortableTh';
+import useSort from '../hooks/useSort';
 
 const EtatConfig = {
-  0: { label: 'Neuf',        tag: 'NEUF', cls: 'bg-success/10 text-success border-l-2 border-success' },
-  1: { label: 'Bon état',    tag: 'BON',  cls: 'bg-success/10 text-success border-l-2 border-success' },
-  2: { label: 'À réparer',   tag: 'REP',  cls: 'bg-warning/10 text-warning border-l-2 border-warning' },
-  3: { label: 'Hors service', tag: 'HS',  cls: 'bg-danger/10 text-danger border-l-2 border-danger' },
+  0: { label: 'Neuf', tone: 'success' },
+  1: { label: 'Bon état', tone: 'success' },
+  2: { label: 'À réparer', tone: 'warning' },
+  3: { label: 'Hors service', tone: 'danger' },
 };
+
+const getSortValue = (actif, col) => actif[col];
 
 const Assets = () => {
   const { hasRole } = useAuth();
+  const isAdmin = hasRole('Administrateur');
   const isGestionnaire = hasRole('Gestionnaire');
 
   const [actifs, setActifs] = useState([]);
@@ -19,13 +28,15 @@ const Assets = () => {
   const [searchText, setSearchText] = useState('');
   const [etatFilter, setEtatFilter] = useState('');
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(15);
   const [totalCount, setTotalCount] = useState(0);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentActif, setCurrentActif] = useState(null);
   const [formData, setFormData] = useState({ nom: '', type: 'Ordinateur', marque: '', modele: '', numeroSerie: '', dateAchat: '', image: '', etat: 0 });
   const [formError, setFormError] = useState('');
+
+  const { sortedRows, sortKey, sortDir, onSort } = useSort(actifs, getSortValue, 'nom');
 
   useEffect(() => { fetchActifs(); }, [page, searchText, etatFilter]);
 
@@ -42,7 +53,7 @@ const Assets = () => {
     } finally { setLoading(false); }
   };
 
-  const handleOpenModal = (actif = null) => {
+  const handleOpenDrawer = (actif = null) => {
     setFormError('');
     if (actif) {
       setCurrentActif(actif);
@@ -51,7 +62,7 @@ const Assets = () => {
       setCurrentActif(null);
       setFormData({ nom: '', type: 'Ordinateur', marque: '', modele: '', numeroSerie: '', dateAchat: '', image: '', etat: 0 });
     }
-    setIsModalOpen(true);
+    setIsDrawerOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -64,7 +75,7 @@ const Assets = () => {
       } else {
         await api.post('/actifs', payload);
       }
-      setIsModalOpen(false);
+      setIsDrawerOpen(false);
       fetchActifs();
     } catch (err) {
       console.error('Submit error:', err);
@@ -83,13 +94,20 @@ const Assets = () => {
     }
   };
 
+  const breadcrumbItems = isAdmin
+    ? [{ label: 'Référentiel' }, { label: 'Actifs' }]
+    : [{ label: 'Affectations' }, { label: 'Rechercher un actif' }];
+
   return (
     <div>
+      <Breadcrumb items={breadcrumbItems} />
+
       {/* Toolbar */}
-      <div className="border-b-2 border-primary bg-surface-bg px-5 py-3 mb-6">
+      <div className="border-b-2 border-primary bg-surface-bg px-4 py-2.5 mb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-3 flex-1">
             <div className="flex-1 max-w-xs">
+              <label className="field-label">Recherche</label>
               <input type="text" placeholder="Désignation ou n° de série..." value={searchText} onChange={(e) => { setSearchText(e.target.value); setPage(1); }} className="form-field" />
             </div>
             <div className="w-44">
@@ -103,46 +121,51 @@ const Assets = () => {
               </select>
             </div>
           </div>
-          {isGestionnaire && (
-            <button onClick={() => handleOpenModal()} className="self-end bg-primary px-5 py-2 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
+          {isAdmin && (
+            <button onClick={() => handleOpenDrawer()} className="self-end bg-primary px-4 py-1.5 text-[11.5px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
               + Nouvel actif
             </button>
           )}
         </div>
+        {isGestionnaire && !isAdmin && (
+          <div className="mt-2 text-[11.5px] text-text-secondary italic">Consultation seule — la gestion du référentiel actifs est réservée à l'Administrateur.</div>
+        )}
       </div>
 
       {error && <div className="mb-4 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{error}</div>}
 
       {/* Table */}
-      <div className="border border-border-subtle bg-surface-bg overflow-hidden">
+      <div className="border border-border-subtle bg-surface-bg overflow-hidden overflow-x-auto">
         <table className="min-w-full">
           <thead>
             <tr className="border-b-2 border-primary bg-neutral-bg">
-              {['Désignation', 'Type', 'Marque / Modèle', 'N° de série', 'État'].map((h) => (
-                <th key={h} className="px-6 py-3 text-left"><span className="th-label">{h}</span></th>
-              ))}
-              {isGestionnaire && <th className="px-6 py-3 text-right"><span className="th-label">Actions</span></th>}
+              <SortableTh label="Désignation" column="nom" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <SortableTh label="Type" column="type" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <th className="px-4 py-2.5 text-left"><span className="th-label">Marque / Modèle</span></th>
+              <SortableTh label="N° de série" column="numeroSerie" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <th className="px-4 py-2.5 text-left"><span className="th-label">État</span></th>
+              {isAdmin && <th className="px-4 py-2.5 text-right"><span className="th-label">Actions</span></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle">
             {loading ? (
-              <tr><td colSpan={isGestionnaire ? 6 : 5} className="px-6 py-10 text-center text-[13px] text-text-secondary">Chargement des matériels...</td></tr>
-            ) : actifs.length === 0 ? (
-              <tr><td colSpan={isGestionnaire ? 6 : 5} className="px-6 py-10 text-center text-[13px] text-text-secondary">Aucun matériel ne correspond aux critères.</td></tr>
+              <tr><td colSpan={isAdmin ? 6 : 5} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Chargement des matériels...</td></tr>
+            ) : sortedRows.length === 0 ? (
+              <tr><td colSpan={isAdmin ? 6 : 5} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Aucun matériel ne correspond aux critères.</td></tr>
             ) : (
-              actifs.map((a) => {
-                const et = EtatConfig[a.etat] || { label: 'Inconnu', tag: '?', cls: '' };
+              sortedRows.map((a) => {
+                const et = EtatConfig[a.etat] || { label: 'Inconnu', tone: 'neutral' };
                 return (
                   <tr key={a.idActif} className="hover:bg-neutral-bg/60 transition-colors">
-                    <td className="whitespace-nowrap px-6 py-4 text-[14px] font-semibold text-text-primary">{a.nom}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-[13px] text-text-secondary">{a.type}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-[13px] text-text-secondary">{[a.marque, a.modele].filter(Boolean).join(' · ') || '—'}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-[13px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{a.numeroSerie || '—'}</td>
-                    <td className="whitespace-nowrap px-6 py-4"><span className={`status-tag ${et.cls}`}>{et.tag}</span></td>
-                    {isGestionnaire && (
-                      <td className="whitespace-nowrap px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-5">
-                          <button onClick={() => handleOpenModal(a)} className="btn-text-action btn-text-action-primary">Modifier</button>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-semibold text-text-primary">{a.nom}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{a.type}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{[a.marque, a.modele].filter(Boolean).join(' · ') || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{a.numeroSerie || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5"><StatusBadge tone={et.tone}>{et.label}</StatusBadge></td>
+                    {isAdmin && (
+                      <td className="whitespace-nowrap px-4 py-2.5 text-right">
+                        <div className="flex items-center justify-end gap-4">
+                          <button onClick={() => handleOpenDrawer(a)} className="btn-text-action btn-text-action-primary">Modifier</button>
                           <button onClick={() => handleDelete(a)} className="btn-text-action btn-text-action-danger">Supprimer</button>
                         </div>
                       </td>
@@ -155,74 +178,62 @@ const Assets = () => {
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalCount > pageSize && (
-        <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-4">
-          <button disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40">← Précédent</button>
-          <span className="text-[12px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>Page {page} / {Math.ceil(totalCount / pageSize)}</span>
-          <button disabled={page * pageSize >= totalCount} onClick={() => setPage((p) => p + 1)} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40">Suivant →</button>
-        </div>
-      )}
+      <Pagination page={page} pageSize={pageSize} totalCount={totalCount} onPageChange={setPage} />
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/30" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-slide-in h-full w-full max-w-lg bg-surface-bg border-l-2 border-primary overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b-2 border-primary px-6 py-4 bg-neutral-bg">
+      {isAdmin && (
+        <Drawer
+          open={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          eyebrow={currentActif ? 'Modification' : 'Création'}
+          title={currentActif ? 'Modifier le matériel' : 'Nouvel actif'}
+        >
+          {formError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{formError}</div>}
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <div className="th-label mb-0.5">{currentActif ? 'Modification' : 'Création'}</div>
-                <h3 className="text-[17px] font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{currentActif ? 'Modifier le matériel' : 'Nouvel actif'}</h3>
+                <label className="field-label">Désignation</label>
+                <input type="text" value={formData.nom} onChange={(e) => setFormData((p) => ({ ...p, nom: e.target.value }))} className="form-field" required />
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl w-8 h-8 flex items-center justify-center">✕</button>
+              <div>
+                <label className="field-label">Type</label>
+                <input type="text" value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))} className="form-field" />
+              </div>
             </div>
-            {formError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{formError}</div>}
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="field-label">Désignation</label>
-                  <input type="text" value={formData.nom} onChange={(e) => setFormData((p) => ({ ...p, nom: e.target.value }))} className="form-field" required />
-                </div>
-                <div>
-                  <label className="field-label">Type</label>
-                  <input type="text" value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))} className="form-field" />
-                </div>
+            <div className="grid grid-cols-3 gap-5">
+              <div>
+                <label className="field-label">Marque</label>
+                <input type="text" value={formData.marque} onChange={(e) => setFormData((p) => ({ ...p, marque: e.target.value }))} className="form-field" />
               </div>
-              <div className="grid grid-cols-3 gap-5">
-                <div>
-                  <label className="field-label">Marque</label>
-                  <input type="text" value={formData.marque} onChange={(e) => setFormData((p) => ({ ...p, marque: e.target.value }))} className="form-field" />
-                </div>
-                <div>
-                  <label className="field-label">Modèle</label>
-                  <input type="text" value={formData.modele} onChange={(e) => setFormData((p) => ({ ...p, modele: e.target.value }))} className="form-field" />
-                </div>
-                <div>
-                  <label className="field-label">N° de série</label>
-                  <input type="text" value={formData.numeroSerie} onChange={(e) => setFormData((p) => ({ ...p, numeroSerie: e.target.value }))} className="form-field" />
-                </div>
+              <div>
+                <label className="field-label">Modèle</label>
+                <input type="text" value={formData.modele} onChange={(e) => setFormData((p) => ({ ...p, modele: e.target.value }))} className="form-field" />
               </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="field-label">Date d'achat</label>
-                  <input type="date" value={formData.dateAchat} onChange={(e) => setFormData((p) => ({ ...p, dateAchat: e.target.value }))} className="form-field" />
-                </div>
-                <div>
-                  <label className="field-label">État</label>
-                  <select value={formData.etat} onChange={(e) => setFormData((p) => ({ ...p, etat: e.target.value }))} className="form-field" required>
-                    <option value="0">Neuf</option>
-                    <option value="1">Bon état</option>
-                    <option value="2">À réparer</option>
-                    <option value="3">Hors service</option>
-                  </select>
-                </div>
+              <div>
+                <label className="field-label">N° de série</label>
+                <input type="text" value={formData.numeroSerie} onChange={(e) => setFormData((p) => ({ ...p, numeroSerie: e.target.value }))} className="form-field" />
               </div>
-              <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
-                <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>
+            </div>
+            <div className="grid grid-cols-2 gap-5">
+              <div>
+                <label className="field-label">Date d'achat</label>
+                <input type="date" value={formData.dateAchat} onChange={(e) => setFormData((p) => ({ ...p, dateAchat: e.target.value }))} className="form-field" />
               </div>
-            </form>
-          </div>
-        </div>
+              <div>
+                <label className="field-label">État</label>
+                <select value={formData.etat} onChange={(e) => setFormData((p) => ({ ...p, etat: e.target.value }))} className="form-field" required>
+                  <option value="0">Neuf</option>
+                  <option value="1">Bon état</option>
+                  <option value="2">À réparer</option>
+                  <option value="3">Hors service</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
+              <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
+              <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>
+            </div>
+          </form>
+        </Drawer>
       )}
     </div>
   );

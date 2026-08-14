@@ -1,14 +1,32 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/AppShell';
+import useAuth from './hooks/useAuth';
+
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Sites from './pages/Sites';
-import Spaces from './pages/Spaces';
+import Batiments from './pages/Batiments';
+import Bureaux from './pages/Bureaux';
 import Agents from './pages/Agents';
 import Assets from './pages/Assets';
+import RechercheBureaux from './pages/RechercheBureaux';
+import AffectationsPoste from './pages/AffectationsPoste';
+import AffectationsActif from './pages/AffectationsActif';
+import HistoriqueAffectations from './pages/HistoriqueAffectations';
+import MonBureau from './pages/MonBureau';
+import MesActifs from './pages/MesActifs';
+
+// Landing page at "/" — each role has a different home, since only
+// Administrateur can read the referentiel endpoints the Dashboard calls.
+const RoleLanding = () => {
+  const { user } = useAuth();
+  if (user?.role === 'Gestionnaire') return <Navigate to="/rechercher-bureau" replace />;
+  if (user?.role === 'Agent') return <Navigate to="/mon-bureau" replace />;
+  return <Dashboard />;
+};
 
 function App() {
   return (
@@ -16,7 +34,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          
+
           <Route
             path="/"
             element={
@@ -25,11 +43,24 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
-            <Route path="sites" element={<Sites />} />
-            <Route path="spaces" element={<Spaces />} />
-            <Route path="agents" element={<Agents />} />
-            <Route path="assets" element={<Assets />} />
+            <Route index element={<RoleLanding />} />
+
+            {/* Administrateur — référentiel */}
+            <Route path="sites" element={<ProtectedRoute requiredRole="Administrateur"><Sites /></ProtectedRoute>} />
+            <Route path="batiments" element={<ProtectedRoute requiredRole="Administrateur"><Batiments /></ProtectedRoute>} />
+            <Route path="bureaux" element={<ProtectedRoute requiredRole="Administrateur"><Bureaux /></ProtectedRoute>} />
+            <Route path="agents" element={<ProtectedRoute requiredRole="Administrateur"><Agents /></ProtectedRoute>} />
+            <Route path="actifs" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Assets /></ProtectedRoute>} />
+
+            {/* Gestionnaire — affectations */}
+            <Route path="rechercher-bureau" element={<ProtectedRoute requiredRole="Gestionnaire"><RechercheBureaux /></ProtectedRoute>} />
+            <Route path="affectations-poste" element={<ProtectedRoute requiredRole="Gestionnaire"><AffectationsPoste /></ProtectedRoute>} />
+            <Route path="affectations-actif" element={<ProtectedRoute requiredRole="Gestionnaire"><AffectationsActif /></ProtectedRoute>} />
+            <Route path="historique-affectations" element={<ProtectedRoute requiredRole="Gestionnaire"><HistoriqueAffectations /></ProtectedRoute>} />
+
+            {/* Agent — mon espace */}
+            <Route path="mon-bureau" element={<ProtectedRoute requiredRole="Agent"><MonBureau /></ProtectedRoute>} />
+            <Route path="mes-actifs" element={<ProtectedRoute requiredRole="Agent"><MesActifs /></ProtectedRoute>} />
           </Route>
         </Routes>
       </Router>

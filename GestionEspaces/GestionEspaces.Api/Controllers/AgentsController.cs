@@ -165,7 +165,7 @@ public sealed class AgentsController : ControllerBase
 
     [HttpDelete("{agentId:int}/asset-assignments/{affId:int}")]
     [Authorize(Policy = "GestionAffectations")]
-    public async Task<IActionResult> CloseAssetAssignmentAsync(int agentId, int affId, [FromBody] CloseAffectationRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CloseAssetAssignmentAsync(int agentId, int affId, [FromBody] CloseAffectationActifRequest request, CancellationToken cancellationToken)
     {
         var result = await _closeActifUseCase.ExecuteAsync(agentId, affId, request, cancellationToken);
         return this.ToActionResult(result, Ok);

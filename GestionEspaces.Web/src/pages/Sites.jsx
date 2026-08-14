@@ -1,23 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import useAuth from '../hooks/useAuth';
+import Breadcrumb from '../components/Breadcrumb';
+import Drawer from '../components/Drawer';
+import Pagination from '../components/Pagination';
+import SortableTh from '../components/SortableTh';
+import useSort from '../hooks/useSort';
+
+const getSortValue = (site, col) => {
+  if (col === 'adresse') return `${site.ville} ${site.rue}`;
+  return site[col];
+};
 
 const Sites = () => {
   const { hasRole } = useAuth();
-  const isGestionnaire = hasRole('Gestionnaire');
+  const isAdmin = hasRole('Administrateur');
 
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchText, setSearchText] = useState('');
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(15);
   const [totalCount, setTotalCount] = useState(0);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentSite, setCurrentSite] = useState(null);
   const [formData, setFormData] = useState({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', image: '' });
   const [formError, setFormError] = useState('');
+
+  const { sortedRows, sortKey, sortDir, onSort } = useSort(sites, getSortValue, 'nom');
 
   useEffect(() => { fetchSites(); }, [page, searchText]);
 
@@ -34,7 +46,7 @@ const Sites = () => {
     } finally { setLoading(false); }
   };
 
-  const handleOpenModal = (site = null) => {
+  const handleOpenDrawer = (site = null) => {
     setFormError('');
     if (site) {
       setCurrentSite(site);
@@ -43,7 +55,7 @@ const Sites = () => {
       setCurrentSite(null);
       setFormData({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', image: '' });
     }
-    setIsModalOpen(true);
+    setIsDrawerOpen(true);
   };
 
   const handleInputChange = (e) => {
@@ -60,7 +72,7 @@ const Sites = () => {
       } else {
         await api.post('/sites', formData);
       }
-      setIsModalOpen(false);
+      setIsDrawerOpen(false);
       fetchSites();
     } catch (err) {
       console.error('Submit error:', err);
@@ -81,8 +93,10 @@ const Sites = () => {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: 'Référentiel' }, { label: 'Sites' }]} />
+
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b-2 border-primary bg-surface-bg px-5 py-3 mb-6">
+      <div className="flex items-center justify-between border-b-2 border-primary bg-surface-bg px-4 py-2.5 mb-4">
         <div className="flex items-center gap-3 flex-1 max-w-xs">
           <input
             type="text"
@@ -92,10 +106,10 @@ const Sites = () => {
             className="form-field flex-1"
           />
         </div>
-        {isGestionnaire && (
+        {isAdmin && (
           <button
-            onClick={() => handleOpenModal()}
-            className="ml-4 bg-primary px-5 py-2 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors"
+            onClick={() => handleOpenDrawer()}
+            className="ml-4 bg-primary px-4 py-1.5 text-[11.5px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors"
             style={{ fontFamily: 'var(--font-mono)' }}
           >
             + Nouveau site
@@ -108,31 +122,31 @@ const Sites = () => {
       )}
 
       {/* Table */}
-      <div className="border border-border-subtle bg-surface-bg overflow-hidden">
+      <div className="border border-border-subtle bg-surface-bg overflow-hidden overflow-x-auto">
         <table className="min-w-full">
           <thead>
             <tr className="border-b-2 border-primary bg-neutral-bg">
-              <th className="px-6 py-3 text-left"><span className="th-label">Code</span></th>
-              <th className="px-6 py-3 text-left"><span className="th-label">Nom du site</span></th>
-              <th className="px-6 py-3 text-left"><span className="th-label">Adresse</span></th>
-              {isGestionnaire && <th className="px-6 py-3 text-right"><span className="th-label">Actions</span></th>}
+              <SortableTh label="Code" column="code" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <SortableTh label="Nom du site" column="nom" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <SortableTh label="Adresse" column="adresse" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              {isAdmin && <th className="px-4 py-2.5 text-right"><span className="th-label">Actions</span></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle">
             {loading ? (
-              <tr><td colSpan={isGestionnaire ? 4 : 3} className="px-6 py-10 text-center text-[13px] text-text-secondary">Chargement des données...</td></tr>
-            ) : sites.length === 0 ? (
-              <tr><td colSpan={isGestionnaire ? 4 : 3} className="px-6 py-10 text-center text-[13px] text-text-secondary">Aucun site ne correspond à la recherche.</td></tr>
+              <tr><td colSpan={isAdmin ? 4 : 3} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Chargement des données...</td></tr>
+            ) : sortedRows.length === 0 ? (
+              <tr><td colSpan={isAdmin ? 4 : 3} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Aucun site ne correspond à la recherche.</td></tr>
             ) : (
-              sites.map((site) => (
+              sortedRows.map((site) => (
                 <tr key={site.idSite} className="hover:bg-neutral-bg/60 transition-colors">
-                  <td className="whitespace-nowrap px-6 py-4 text-[13px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{site.code}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-[14px] font-medium text-text-primary">{site.nom}</td>
-                  <td className="px-6 py-4 text-[13px] text-text-secondary">{site.rue}, {site.codePostal} {site.ville}, {site.pays}</td>
-                  {isGestionnaire && (
-                    <td className="whitespace-nowrap px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-5">
-                        <button onClick={() => handleOpenModal(site)} className="btn-text-action btn-text-action-primary">Modifier</button>
+                  <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{site.code}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-medium text-text-primary">{site.nom}</td>
+                  <td className="px-4 py-2.5 text-[12.5px] text-text-secondary">{site.rue}, {site.codePostal} {site.ville}, {site.pays}</td>
+                  {isAdmin && (
+                    <td className="whitespace-nowrap px-4 py-2.5 text-right">
+                      <div className="flex items-center justify-end gap-4">
+                        <button onClick={() => handleOpenDrawer(site)} className="btn-text-action btn-text-action-primary">Modifier</button>
                         <button onClick={() => handleDelete(site)} className="btn-text-action btn-text-action-danger">Supprimer</button>
                       </div>
                     </td>
@@ -144,72 +158,56 @@ const Sites = () => {
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalCount > pageSize && (
-        <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-4">
-          <button disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40 transition-colors" style={{ fontFamily: 'var(--font-sans)' }}>← Précédent</button>
-          <span className="text-[12px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>Page {page} / {Math.ceil(totalCount / pageSize)}</span>
-          <button disabled={page * pageSize >= totalCount} onClick={() => setPage((p) => p + 1)} className="text-[13px] font-medium text-primary hover:text-primary-dark disabled:opacity-40 transition-colors" style={{ fontFamily: 'var(--font-sans)' }}>Suivant →</button>
-        </div>
-      )}
+      <Pagination page={page} pageSize={pageSize} totalCount={totalCount} onPageChange={setPage} />
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/30" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-slide-in h-full w-full max-w-lg bg-surface-bg border-l-2 border-primary overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b-2 border-primary px-6 py-4 bg-neutral-bg">
-              <div>
-                <div className="th-label mb-0.5">{currentSite ? 'Modification' : 'Création'}</div>
-                <h3 className="text-[17px] font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{currentSite ? 'Modifier le site' : 'Nouveau site'}</h3>
-              </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-text-secondary hover:text-text-primary transition-colors text-xl w-8 h-8 flex items-center justify-center">✕</button>
+      <Drawer
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        eyebrow={currentSite ? 'Modification' : 'Création'}
+        title={currentSite ? 'Modifier le site' : 'Nouveau site'}
+      >
+        {formError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{formError}</div>}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label className="field-label">Nom du site</label>
+              <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} className="form-field" required />
             </div>
-
-            {formError && <div className="mx-6 mt-5 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{formError}</div>}
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="field-label">Nom du site</label>
-                  <input type="text" name="nom" value={formData.nom} onChange={handleInputChange} className="form-field" required />
-                </div>
-                <div>
-                  <label className="field-label">Code unique</label>
-                  <input type="text" name="code" value={formData.code} onChange={handleInputChange} className="form-field" required />
-                </div>
-              </div>
-              <div>
-                <label className="field-label">Rue</label>
-                <input type="text" name="rue" value={formData.rue} onChange={handleInputChange} className="form-field" required />
-              </div>
-              <div className="grid grid-cols-3 gap-5">
-                <div className="col-span-2">
-                  <label className="field-label">Ville</label>
-                  <input type="text" name="ville" value={formData.ville} onChange={handleInputChange} className="form-field" required />
-                </div>
-                <div>
-                  <label className="field-label">Code postal</label>
-                  <input type="text" name="codePostal" value={formData.codePostal} onChange={handleInputChange} className="form-field" required />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <label className="field-label">Pays</label>
-                  <input type="text" name="pays" value={formData.pays} onChange={handleInputChange} className="form-field" required />
-                </div>
-                <div>
-                  <label className="field-label">Image URL (optionnel)</label>
-                  <input type="text" name="image" value={formData.image} onChange={handleInputChange} className="form-field" />
-                </div>
-              </div>
-              <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
-                <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>
-              </div>
-            </form>
+            <div>
+              <label className="field-label">Code unique</label>
+              <input type="text" name="code" value={formData.code} onChange={handleInputChange} className="form-field" required />
+            </div>
           </div>
-        </div>
-      )}
+          <div>
+            <label className="field-label">Rue</label>
+            <input type="text" name="rue" value={formData.rue} onChange={handleInputChange} className="form-field" required />
+          </div>
+          <div className="grid grid-cols-3 gap-5">
+            <div className="col-span-2">
+              <label className="field-label">Ville</label>
+              <input type="text" name="ville" value={formData.ville} onChange={handleInputChange} className="form-field" required />
+            </div>
+            <div>
+              <label className="field-label">Code postal</label>
+              <input type="text" name="codePostal" value={formData.codePostal} onChange={handleInputChange} className="form-field" required />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label className="field-label">Pays</label>
+              <input type="text" name="pays" value={formData.pays} onChange={handleInputChange} className="form-field" required />
+            </div>
+            <div>
+              <label className="field-label">Image URL (optionnel)</label>
+              <input type="text" name="image" value={formData.image} onChange={handleInputChange} className="form-field" />
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
+            <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
+            <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>
+          </div>
+        </form>
+      </Drawer>
     </div>
   );
 };

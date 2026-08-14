@@ -12,15 +12,17 @@ namespace GestionEspaces.Application.UseCases;
 public sealed class CloseAffectationActifUseCase
 {
     private readonly IAgentRepository _agentRepository;
+    private readonly IActifRepository _actifRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CloseAffectationActifUseCase(IAgentRepository agentRepository, IUnitOfWork unitOfWork)
+    public CloseAffectationActifUseCase(IAgentRepository agentRepository, IActifRepository actifRepository, IUnitOfWork unitOfWork)
     {
         _agentRepository = agentRepository;
+        _actifRepository = actifRepository;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<AssignmentUseCaseResult>> ExecuteAsync(int agentId, int idAffectationActif, CloseAffectationRequest request, CancellationToken cancellationToken)
+    public async Task<Result<AssignmentUseCaseResult>> ExecuteAsync(int agentId, int idAffectationActif, CloseAffectationActifRequest request, CancellationToken cancellationToken)
     {
         if (request.DateFin == default)
         {
@@ -36,10 +38,27 @@ public sealed class CloseAffectationActifUseCase
         try
         {
             agent.CloreAffectationActif(idAffectationActif, request.DateFin);
+            var affectation = agent.AffectationsActif.Single(a => a.IdAffectationActif == idAffectationActif);
+
+            if (request.EtatRetour.HasValue)
+            {
+                var actif = await _actifRepository.GetByIdAsync(affectation.IdActif, cancellationToken);
+                if (actif is not null)
+                {
+                    switch (request.EtatRetour.Value)
+                    {
+                        case Domain.Entities.EtatActif.Bon: actif.MarquerBonEtat(); break;
+                        case Domain.Entities.EtatActif.ARepairer: actif.MarquerARepairer(); break;
+                        case Domain.Entities.EtatActif.HorsService: actif.MarquerHorsService(); break;
+                    }
+
+                    _actifRepository.Update(actif);
+                }
+            }
+
             _agentRepository.Update(agent);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var affectation = agent.AffectationsActif.Single(a => a.IdAffectationActif == idAffectationActif);
             return Result<AssignmentUseCaseResult>.Success(affectation.ToResult());
         }
         catch (BusinessRuleViolationException exception)
