@@ -2,33 +2,50 @@ import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
+const AFFECTATIONS_GROUP = {
+  label: 'Affectations',
+  items: [
+    { name: 'Rechercher un bureau', path: '/rechercher-bureau' },
+    { name: 'Affectations de poste', path: '/affectations-poste' },
+    { name: "Affectations d'actifs", path: '/affectations-actif' },
+    { name: 'Historique des affectations', path: '/historique-affectations' },
+  ],
+};
+
 const NAV_GROUPS = {
   Administrateur: {
     pinned: { name: 'Tableau de bord', path: '/' },
-    label: 'Référentiel',
-    items: [
-      { name: 'Sites', path: '/sites' },
-      { name: 'Bâtiments', path: '/batiments' },
-      { name: 'Bureaux', path: '/bureaux' },
-      { name: 'Agents', path: '/agents' },
-      { name: 'Actifs', path: '/actifs' },
+    groups: [
+      {
+        label: 'Référentiel',
+        items: [
+          { name: 'Sites', path: '/sites' },
+          { name: 'Bâtiments', path: '/batiments' },
+          { name: 'Bureaux', path: '/bureaux' },
+          { name: 'Agents', path: '/agents' },
+          { name: 'Actifs', path: '/actifs' },
+        ],
+      },
+      AFFECTATIONS_GROUP,
     ],
   },
   Gestionnaire: {
-    label: 'Affectations',
-    items: [
-      { name: 'Rechercher un bureau', path: '/rechercher-bureau' },
-      { name: 'Affectations de poste', path: '/affectations-poste' },
-      { name: "Affectations d'actifs", path: '/affectations-actif' },
-      { name: 'Historique des affectations', path: '/historique-affectations' },
-      { name: 'Rechercher un actif', path: '/actifs' },
+    groups: [
+      {
+        label: 'Affectations',
+        items: [...AFFECTATIONS_GROUP.items, { name: 'Rechercher un actif', path: '/actifs' }],
+      },
     ],
   },
   Agent: {
-    label: 'Mon espace',
-    items: [
-      { name: 'Mon bureau', path: '/mon-bureau' },
-      { name: 'Mes actifs', path: '/mes-actifs' },
+    groups: [
+      {
+        label: 'Mon espace',
+        items: [
+          { name: 'Mon bureau', path: '/mon-bureau' },
+          { name: 'Mes actifs', path: '/mes-actifs' },
+        ],
+      },
     ],
   },
 };
@@ -38,8 +55,11 @@ const AppShell = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const group = NAV_GROUPS[user?.role] || { items: [] };
-  const allItems = [...(group.pinned ? [group.pinned] : []), ...group.items];
+  const roleNav = NAV_GROUPS[user?.role] || { groups: [] };
+  const allItems = [
+    ...(roleNav.pinned ? [roleNav.pinned] : []),
+    ...roleNav.groups.flatMap((g) => g.items),
+  ];
   const currentLabel = allItems.find((item) => item.path === location.pathname)?.name || 'GestionEspaces';
 
   const handleLogout = () => {
@@ -86,16 +106,18 @@ const AppShell = () => {
 
         {/* Navigation */}
         <nav className="flex-1 py-3 overflow-y-auto">
-          {group.pinned && <div className="mb-2">{renderLink(group.pinned)}</div>}
-          {group.label && (
-            <div
-              className="px-5 pt-2 pb-1.5 text-[10px] text-white/40 tracking-[0.15em] uppercase"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              {group.label}
+          {roleNav.pinned && <div className="mb-2">{renderLink(roleNav.pinned)}</div>}
+          {roleNav.groups.map((g) => (
+            <div key={g.label}>
+              <div
+                className="px-5 pt-2 pb-1.5 text-[10px] text-white/40 tracking-[0.15em] uppercase"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {g.label}
+              </div>
+              {g.items.map(renderLink)}
             </div>
-          )}
-          {group.items.map(renderLink)}
+          ))}
         </nav>
 
         {/* User footer */}

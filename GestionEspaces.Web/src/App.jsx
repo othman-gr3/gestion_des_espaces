@@ -52,11 +52,11 @@ function App() {
             <Route path="agents" element={<ProtectedRoute requiredRole="Administrateur"><Agents /></ProtectedRoute>} />
             <Route path="actifs" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Assets /></ProtectedRoute>} />
 
-            {/* Gestionnaire — affectations */}
-            <Route path="rechercher-bureau" element={<ProtectedRoute requiredRole="Gestionnaire"><RechercheBureaux /></ProtectedRoute>} />
-            <Route path="affectations-poste" element={<ProtectedRoute requiredRole="Gestionnaire"><AffectationsPoste /></ProtectedRoute>} />
-            <Route path="affectations-actif" element={<ProtectedRoute requiredRole="Gestionnaire"><AffectationsActif /></ProtectedRoute>} />
-            <Route path="historique-affectations" element={<ProtectedRoute requiredRole="Gestionnaire"><HistoriqueAffectations /></ProtectedRoute>} />
+            {/* Administrateur + Gestionnaire — affectations (matches the backend's GestionAffectations/ReferentielLecture policies) */}
+            <Route path="rechercher-bureau" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><RechercheBureaux /></ProtectedRoute>} />
+            <Route path="affectations-poste" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsPoste /></ProtectedRoute>} />
+            <Route path="affectations-actif" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsActif /></ProtectedRoute>} />
+            <Route path="historique-affectations" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><HistoriqueAffectations /></ProtectedRoute>} />
 
             {/* Agent — mon espace */}
             <Route path="mon-bureau" element={<ProtectedRoute requiredRole="Agent"><MonBureau /></ProtectedRoute>} />
