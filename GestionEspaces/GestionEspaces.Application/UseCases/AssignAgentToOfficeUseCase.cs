@@ -51,7 +51,7 @@ public sealed class AssignAgentToOfficeUseCase
 
         try
         {
-            var affectation = agent.AffecterAuBureau(bureau, request.DateAffectation);
+            var affectation = agent.AffecterAuBureau(bureau, request.DateAffectation, request.Motif);
             _agentRepository.Update(agent);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -9,4 +9,6 @@ public sealed record SiteDto(
     string Ville,
     string CodePostal,
     string Pays,
+    string? Telephone,
+    string? Email,
     string? Image);

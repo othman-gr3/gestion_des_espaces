@@ -59,7 +59,7 @@ public sealed class RoleBasedAccessTests : IClassFixture<SqlServerFixture>
         var resp = await client.PostAsJsonAsync("/api/bureaux", new
         {
             numero,
-            type = "Bureau individuel",
+            type = 0,   // Individuel
             capacite = 1,
             superficie = 12f,
             etage = 1,

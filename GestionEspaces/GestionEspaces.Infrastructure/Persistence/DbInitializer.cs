@@ -20,6 +20,8 @@ public static class DbInitializer
             "Siège ONEE - Branche Électricité",
             "SIEGE",
             new AdresseSite("65, Rue Othman Ben Affane", "Casablanca", "20000", "Maroc"),
+            "0522123456",
+            "contact.siege@onee.ma",
             "site_siege.jpg"
         );
 
@@ -27,6 +29,8 @@ public static class DbInitializer
             "Direction Régionale de Casablanca",
             "DR-CASA",
             new AdresseSite("Bd Ahl Loughlam, BP 2590, Ain Sebaa", "Casablanca", "20250", "Maroc"),
+            "0522987654",
+            "dr.casa@onee.ma",
             "site_dr_casa.jpg"
         );
 
@@ -42,15 +46,15 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
         // 3. BUREAUX
-        var bur1 = new Bureau("101", "Bureau individuel", 1, 14f, 1, "bur_101.jpg", bat1.IdBatiment);
-        var bur2 = new Bureau("205", "Salle de réunion", 12, 32f, 2, "bur_205.jpg", bat1.IdBatiment);
-        var bur3 = new Bureau("310", "Open space", 20, 85f, 3, "bur_310.jpg", bat1.IdBatiment);
-        var bur4 = new Bureau("402", "Bureau individuel", 1, 12f, 4, "bur_402.jpg", bat1.IdBatiment);
+        var bur1 = new Bureau("101", TypeBureau.Individuel, 1, 14f, 1, "bur_101.jpg", bat1.IdBatiment);
+        var bur2 = new Bureau("205", TypeBureau.SalleReunion, 12, 32f, 2, "bur_205.jpg", bat1.IdBatiment);
+        var bur3 = new Bureau("310", TypeBureau.OpenSpace, 20, 85f, 3, "bur_310.jpg", bat1.IdBatiment);
+        var bur4 = new Bureau("402", TypeBureau.Individuel, 1, 12f, 4, "bur_402.jpg", bat1.IdBatiment);
         bur4.MettreEnMaintenance();
 
-        var bur5 = new Bureau("12", "Bureau partagé", 4, 28f, 1, "bur_12.jpg", bat2.IdBatiment);
-        var bur6 = new Bureau("07", "Salle de formation", 15, 40f, 0, "bur_07.jpg", bat3.IdBatiment);
-        var bur7 = new Bureau("15", "Bureau individuel", 1, 13f, 1, "bur_15.jpg", bat3.IdBatiment);
+        var bur5 = new Bureau("12", TypeBureau.OpenSpace, 4, 28f, 1, "bur_12.jpg", bat2.IdBatiment);
+        var bur6 = new Bureau("07", TypeBureau.SalleReunion, 15, 40f, 0, "bur_07.jpg", bat3.IdBatiment);
+        var bur7 = new Bureau("15", TypeBureau.Individuel, 1, 13f, 1, "bur_15.jpg", bat3.IdBatiment);
 
         await context.Bureaux.AddRangeAsync(bur1, bur2, bur3, bur4, bur5, bur6, bur7);
         await context.SaveChangesAsync();
@@ -96,6 +100,9 @@ public static class DbInitializer
 
         var finishedOfficeAff = agent7.AffecterAuBureau(bur2, new DateTime(2022, 5, 1));
         finishedOfficeAff.Clore(new DateTime(2024, 9, 30));
+        // Closing an affectation normally frees the office back up (see CloseAffectationPosteUseCase);
+        // seeding bypasses that use case, so mirror it here explicitly.
+        bur2.RemettreEnService();
 
         // 7. AFFECTATIONS ACTIFS (Asset assignments)
         // agent1 -> act1

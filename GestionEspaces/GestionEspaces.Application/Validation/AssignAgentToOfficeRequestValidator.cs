@@ -18,5 +18,9 @@ public sealed class AssignAgentToOfficeRequestValidator : AbstractValidator<Assi
 
         RuleFor(request => request.DateAffectation)
             .NotEmpty();
+
+        RuleFor(request => request.Motif)
+            .MaximumLength(100)
+            .When(request => !string.IsNullOrWhiteSpace(request.Motif));
     }
 }

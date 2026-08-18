@@ -68,7 +68,7 @@ public class Agent
         Image = image;
     }
 
-    public AffectationPoste AffecterAuBureau(Bureau bureau, DateTime dateAffectation)
+    public AffectationPoste AffecterAuBureau(Bureau bureau, DateTime dateAffectation, string? motif = null)
     {
         if (bureau is null)
         {
@@ -80,14 +80,20 @@ public class Agent
             throw new BusinessRuleViolationException("L'agent possède déjà une affectation de poste active.");
         }
 
+        if (!bureau.EstDisponible())
+        {
+            throw new BusinessRuleViolationException($"Le bureau {bureau.Numero} n'est pas disponible pour une affectation.");
+        }
+
         if (bureau.Affectations.Any(affectation => affectation.EstActive))
         {
             throw new BusinessRuleViolationException($"Le bureau {bureau.Numero} possède déjà une affectation de poste active.");
         }
 
-        var affectation = new AffectationPoste(this, bureau, dateAffectation);
+        var affectation = new AffectationPoste(this, bureau, dateAffectation, motif);
         _affectationsPoste.Add(affectation);
         bureau.AjouterAffectationPoste(affectation);
+        bureau.MarquerOccupe();
 
         return affectation;
     }

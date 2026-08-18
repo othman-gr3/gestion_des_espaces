@@ -8,8 +8,14 @@ import useSort from '../hooks/useSort';
 
 const StatutConfig = {
   0: { label: 'Disponible', tone: 'success' },
-  1: { label: 'Maintenance', tone: 'warning' },
-  2: { label: 'Hors service', tone: 'danger' },
+  1: { label: 'Occupé', tone: 'warning' },
+  2: { label: 'En maintenance', tone: 'danger' },
+};
+
+const TypeConfig = {
+  0: 'Individuel',
+  1: 'Open space',
+  2: 'Salle de réunion',
 };
 
 const getSortValue = (b, col) => b[col];
@@ -74,8 +80,8 @@ const RechercheBureaux = () => {
             <select value={statutFilter} onChange={(e) => setStatutFilter(e.target.value)} className="form-field">
               <option value="">Tous les statuts</option>
               <option value="0">Disponible</option>
-              <option value="1">En maintenance</option>
-              <option value="2">Hors service</option>
+              <option value="1">Occupé</option>
+              <option value="2">En maintenance</option>
             </select>
           </div>
         </div>
@@ -107,7 +113,7 @@ const RechercheBureaux = () => {
                   <tr key={b.idBureau} className="hover:bg-neutral-bg/60 transition-colors">
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{b.numero}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{batimentName(b.idBatiment)}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-text-primary">{b.type}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-text-primary">{TypeConfig[b.type] ?? '—'}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-primary">{b.capacite} poste{b.capacite > 1 ? 's' : ''}</td>
                     <td className="whitespace-nowrap px-4 py-2.5"><StatusBadge tone={st.tone}>{st.label}</StatusBadge></td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-right">

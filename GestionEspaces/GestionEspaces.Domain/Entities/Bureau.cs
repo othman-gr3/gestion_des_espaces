@@ -3,8 +3,15 @@
 public enum StatutBureau
 {
     Disponible,
-    EnMaintenance,
-    HorsService
+    Occupe,
+    EnMaintenance
+}
+
+public enum TypeBureau
+{
+    Individuel,
+    OpenSpace,
+    SalleReunion
 }
 
 public class Bureau
@@ -12,7 +19,7 @@ public class Bureau
     public int IdBureau { get; private set; }
     public byte[] Version { get; private set; } = Array.Empty<byte>();
     public string Numero { get; private set; } = string.Empty;
-    public string? Type { get; private set; }
+    public TypeBureau? Type { get; private set; }
     public int Capacite { get; private set; }
     public float Superficie { get; private set; }
     public int Etage { get; private set; }
@@ -27,7 +34,7 @@ public class Bureau
 
     private Bureau() { }
 
-    public Bureau(string numero, string? type, int capacite, float superficie,
+    public Bureau(string numero, TypeBureau? type, int capacite, float superficie,
                   int etage, string? image, int idBatiment)
     {
         if (string.IsNullOrWhiteSpace(numero))
@@ -44,7 +51,7 @@ public class Bureau
         IdBatiment = idBatiment;
     }
 
-    public void MettreAJour(string numero, string? type, int capacite, float superficie, int etage, string? image, int idBatiment)
+    public void MettreAJour(string numero, TypeBureau? type, int capacite, float superficie, int etage, string? image, int idBatiment)
     {
         if (string.IsNullOrWhiteSpace(numero))
         {
@@ -57,7 +64,7 @@ public class Bureau
         }
 
         Numero = numero.Trim();
-        Type = type?.Trim();
+        Type = type;
         Capacite = capacite;
         Superficie = superficie;
         Etage = etage;
@@ -67,8 +74,13 @@ public class Bureau
 
     public void MettreEnMaintenance() => Statut = StatutBureau.EnMaintenance;
     public void RemettreEnService() => Statut = StatutBureau.Disponible;
-    public void MettreHorsService() => Statut = StatutBureau.HorsService;
     public bool EstDisponible() => Statut == StatutBureau.Disponible;
+
+    /// <summary>
+    /// Marks the office as occupied. Called automatically when an agent is assigned to it
+    /// (<see cref="Agent.AffecterAuBureau"/>) — never invoked directly from outside the domain.
+    /// </summary>
+    internal void MarquerOccupe() => Statut = StatutBureau.Occupe;
 
     internal void AjouterAffectationPoste(AffectationPoste affectation)
     {

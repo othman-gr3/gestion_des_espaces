@@ -26,6 +26,12 @@ internal sealed class SiteConfiguration : IEntityTypeConfiguration<Site>
         builder.HasIndex(site => site.Code)
             .IsUnique();
 
+        builder.Property(site => site.Telephone)
+            .HasMaxLength(20);
+
+        builder.Property(site => site.Email)
+            .HasMaxLength(100);
+
         builder.Property(site => site.Image)
             .HasMaxLength(500);
 

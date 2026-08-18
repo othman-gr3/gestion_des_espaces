@@ -59,7 +59,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
         var response = await client.PostAsJsonAsync("/api/bureaux", new
         {
             numero,
-            type = "Open-space",
+            type = 1,   // OpenSpace
             capacite = 6,
             superficie = 30f,
             etage = 1,
@@ -92,7 +92,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
         var response = await client.PostAsJsonAsync("/api/bureaux", new
         {
             numero = "B-001",
-            type = "Bureau",
+            type = 0,   // Individuel
             capacite = 2,
             superficie = 15f,
             etage = 1,
@@ -135,17 +135,17 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
         {
             concurrencyToken = token,
             numero = "B-201",
-            type = "Open-space",
+            type = 1,   // OpenSpace
             capacite = 8,
             superficie = 30f,
             etage = 1,
             image = (string?)null,
             idBatiment,
-            statut = 1   // EnMaintenance
+            statut = 2   // EnMaintenance
         });
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updated = await updateResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        Assert.Equal(1, updated.GetProperty("statut").GetInt32()); // EnMaintenance
+        Assert.Equal(2, updated.GetProperty("statut").GetInt32()); // EnMaintenance
 
         var newToken = updated.GetProperty("concurrencyToken").GetString();
         Assert.NotNull(newToken);
@@ -173,13 +173,13 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
         {
             concurrencyToken = token,
             numero = "B-301",
-            type = "Open-space",
+            type = 1,   // OpenSpace
             capacite = 6,
             superficie = 30f,
             etage = 1,
             image = (string?)null,
             idBatiment,
-            statut = 2   // HorsService
+            statut = 2   // EnMaintenance
         });
         Assert.Equal(HttpStatusCode.OK, firstUpdate.StatusCode);
 
@@ -188,7 +188,7 @@ public sealed class BureauxCrudTests : IClassFixture<SqlServerFixture>
         {
             concurrencyToken = token,   // stale
             numero = "B-301",
-            type = "Open-space",
+            type = 1,   // OpenSpace
             capacite = 6,
             superficie = 30f,
             etage = 1,

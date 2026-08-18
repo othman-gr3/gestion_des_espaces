@@ -7,4 +7,6 @@ public sealed record CreateSiteRequest(
     string Ville,
     string CodePostal,
     string Pays,
+    string? Telephone,
+    string? Email,
     string? Image);

@@ -5,7 +5,7 @@ namespace GestionEspaces.Application.DTOs.Bureaux;
 public sealed record UpdateBureauRequest(
     string ConcurrencyToken,
     string Numero,
-    string? Type,
+    TypeBureau? Type,
     int Capacite,
     float Superficie,
     int Etage,

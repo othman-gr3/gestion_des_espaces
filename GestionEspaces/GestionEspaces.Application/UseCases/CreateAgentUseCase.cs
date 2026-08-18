@@ -40,6 +40,11 @@ public sealed class CreateAgentUseCase
             return Result<AgentDto>.Failure(new ErrorDetail("DuplicateMatricule", $"Un agent avec le matricule '{request.Matricule}' existe déjà.", nameof(request.Matricule)));
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Email) && await _agentRepository.ExistsByEmailAsync(request.Email, null, cancellationToken))
+        {
+            return Result<AgentDto>.Failure(new ErrorDetail("DuplicateEmail", $"Un agent avec l'email '{request.Email}' existe déjà.", nameof(request.Email)));
+        }
+
         var agent = new Agent(
             request.Nom.Trim(),
             request.Prenom.Trim(),

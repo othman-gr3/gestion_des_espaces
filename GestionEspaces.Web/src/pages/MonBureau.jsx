@@ -5,8 +5,14 @@ import StatusBadge from '../components/StatusBadge';
 
 const StatutConfig = {
   0: { label: 'Disponible', tone: 'success' },
-  1: { label: 'Maintenance', tone: 'warning' },
-  2: { label: 'Hors service', tone: 'danger' },
+  1: { label: 'Occupé', tone: 'warning' },
+  2: { label: 'En maintenance', tone: 'danger' },
+};
+
+const TypeConfig = {
+  0: 'Individuel',
+  1: 'Open space',
+  2: 'Salle de réunion',
 };
 
 const MonBureau = () => {
@@ -64,7 +70,7 @@ const MonBureau = () => {
           <div className="grid grid-cols-2 gap-5 border-t border-border-subtle pt-5">
             <div>
               <div className="field-label">Type d'espace</div>
-              <div className="text-[13px] text-text-primary mt-1">{bureau.type || '—'}</div>
+              <div className="text-[13px] text-text-primary mt-1">{TypeConfig[bureau.type] ?? '—'}</div>
             </div>
             <div>
               <div className="field-label">Étage</div>

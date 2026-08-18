@@ -89,7 +89,7 @@ public sealed class BureauRepository : IBureauRepository
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             var filter = searchText.Trim();
-            query = query.Where(bureau => bureau.Numero.Contains(filter) || (bureau.Type != null && bureau.Type.Contains(filter)));
+            query = query.Where(bureau => bureau.Numero.Contains(filter));
         }
 
         return query;

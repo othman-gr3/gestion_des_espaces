@@ -8,4 +8,5 @@ public sealed record AffectationPosteDto(
     int AgentId,
     int BureauId,
     DateTime DateAffectation,
-    DateTime? DateFin);
+    DateTime? DateFin,
+    string? Motif);

@@ -11,6 +11,7 @@ public class AffectationPoste
     public Bureau Bureau { get; private set; } = null!;
     public DateTime DateAffectation { get; private set; }
     public DateTime? DateFin { get; private set; }
+    public string? Motif { get; private set; }
 
     public bool EstActive => DateFin is null;
 
@@ -18,7 +19,7 @@ public class AffectationPoste
     {
     }
 
-    internal AffectationPoste(Agent agent, Bureau bureau, DateTime dateAffectation)
+    internal AffectationPoste(Agent agent, Bureau bureau, DateTime dateAffectation, string? motif = null)
     {
         Agent = agent ?? throw new ArgumentNullException(nameof(agent));
         Bureau = bureau ?? throw new ArgumentNullException(nameof(bureau));
@@ -31,6 +32,7 @@ public class AffectationPoste
         DateAffectation = dateAffectation;
         IdAgent = agent.IdAgent;
         IdBureau = bureau.IdBureau;
+        Motif = motif;
     }
 
     public void Clore(DateTime dateFin)

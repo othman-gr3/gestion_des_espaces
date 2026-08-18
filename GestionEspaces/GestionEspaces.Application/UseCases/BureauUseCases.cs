@@ -117,9 +117,9 @@ public sealed class BureauUseCases
             case Domain.Entities.StatutBureau.EnMaintenance:
                 bureau.MettreEnMaintenance();
                 break;
-            case Domain.Entities.StatutBureau.HorsService:
-                bureau.MettreHorsService();
-                break;
+            // Occupe is derived automatically from an active AffectationPoste
+            // (see Agent.AffecterAuBureau / CloseAffectationPosteUseCase) and is not
+            // directly settable through the referentiel edit form.
         }
 
         _bureauRepository.Update(bureau);

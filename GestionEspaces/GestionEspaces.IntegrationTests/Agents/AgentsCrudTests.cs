@@ -210,6 +210,43 @@ public sealed class AgentsCrudTests : IClassFixture<SqlServerFixture>
         Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
     }
 
+    // ── Duplicate email ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Create_WithDuplicateEmail_Returns409()
+    {
+        var client = _fixture.CreateClient();
+        client.DefaultRequestHeaders.Add("Authorization", AuthHelper.BearerFor(AuthHelper.Roles.Administrateur));
+
+        var first = await client.PostAsJsonAsync("/api/agents", new
+        {
+            nom = "Leroy",
+            prenom = "Alice",
+            matricule = "AGT-DUP-EMAIL-01",
+            email = "alice.leroy@test.fr",
+            telephone = (string?)null,
+            fonction = (string?)null,
+            departement = (string?)null,
+            dateEmbauche = (DateTime?)null,
+            image = (string?)null
+        });
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+
+        var duplicate = await client.PostAsJsonAsync("/api/agents", new
+        {
+            nom = "Leroy",
+            prenom = "Autre",
+            matricule = "AGT-DUP-EMAIL-02",
+            email = "alice.leroy@test.fr",
+            telephone = (string?)null,
+            fonction = (string?)null,
+            departement = (string?)null,
+            dateEmbauche = (DateTime?)null,
+            image = (string?)null
+        });
+        Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
+    }
+
     // ── Search / Pagination ────────────────────────────────────────────────────
 
     [Fact]

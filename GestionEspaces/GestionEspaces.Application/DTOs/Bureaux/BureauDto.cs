@@ -6,7 +6,7 @@ public sealed record BureauDto(
     int IdBureau,
     string? ConcurrencyToken,
     string Numero,
-    string? Type,
+    TypeBureau? Type,
     int Capacite,
     float Superficie,
     int Etage,

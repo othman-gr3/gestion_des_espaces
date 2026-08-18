@@ -90,7 +90,7 @@ public class AssignmentRulesTests
 
     private static Bureau CreateBureau() => new(
         "B-101",
-        "Individuel",
+        TypeBureau.Individuel,
         1,
         18.5f,
         1,
@@ -99,7 +99,7 @@ public class AssignmentRulesTests
 
     private static Bureau CreateSecondBureau() => new(
         "B-102",
-        "Individuel",
+        TypeBureau.Individuel,
         1,
         19.0f,
         1,

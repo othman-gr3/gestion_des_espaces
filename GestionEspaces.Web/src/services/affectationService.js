@@ -12,8 +12,8 @@ export const listSites = (params = {}) => api.get('/sites', { params: { pageSize
 
 export const getOfficeAssignments = (agentId) => api.get(`/agents/${agentId}/office-assignments`);
 
-export const createOfficeAssignment = (agentId, bureauId, dateAffectation) =>
-  api.post(`/agents/${agentId}/office-assignments`, { bureauId, dateAffectation });
+export const createOfficeAssignment = (agentId, bureauId, dateAffectation, motif = null) =>
+  api.post(`/agents/${agentId}/office-assignments`, { bureauId, dateAffectation, motif });
 
 export const closeOfficeAssignment = (agentId, affectationId, dateFin) =>
   api.delete(`/agents/${agentId}/office-assignments/${affectationId}`, { data: { dateFin } });

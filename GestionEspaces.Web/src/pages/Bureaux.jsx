@@ -11,8 +11,14 @@ import useSort from '../hooks/useSort';
 
 const StatutConfig = {
   0: { label: 'Disponible', tone: 'success' },
-  1: { label: 'Maintenance', tone: 'warning' },
-  2: { label: 'Hors service', tone: 'danger' },
+  1: { label: 'Occupé', tone: 'warning' },
+  2: { label: 'En maintenance', tone: 'danger' },
+};
+
+const TypeConfig = {
+  0: 'Individuel',
+  1: 'Open space',
+  2: 'Salle de réunion',
 };
 
 const getSortValue = (b, col) => b[col];
@@ -38,7 +44,7 @@ const Bureaux = () => {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentBureau, setCurrentBureau] = useState(null);
-  const [formData, setFormData] = useState({ numero: '', type: 'Bureau individuel', capacite: 1, superficie: 10, etage: 0, image: '', idBatiment: '', statut: 0 });
+  const [formData, setFormData] = useState({ numero: '', type: 0, capacite: 1, superficie: 10, etage: 0, image: '', idBatiment: '', statut: 0 });
   const [formError, setFormError] = useState('');
 
   const { sortedRows, sortKey, sortDir, onSort } = useSort(bureaux, getSortValue, 'numero');
@@ -83,10 +89,10 @@ const Bureaux = () => {
     setFormError('');
     if (bureau) {
       setCurrentBureau(bureau);
-      setFormData({ numero: bureau.numero, type: bureau.type || 'Bureau individuel', capacite: bureau.capacite, superficie: bureau.superficie, etage: bureau.etage, image: bureau.image || '', idBatiment: bureau.idBatiment, statut: bureau.statut });
+      setFormData({ numero: bureau.numero, type: bureau.type ?? 0, capacite: bureau.capacite, superficie: bureau.superficie, etage: bureau.etage, image: bureau.image || '', idBatiment: bureau.idBatiment, statut: bureau.statut });
     } else {
       setCurrentBureau(null);
-      setFormData({ numero: '', type: 'Bureau individuel', capacite: 1, superficie: 10, etage: 0, image: '', idBatiment: selectedBatimentId || (filteredBatiments[0]?.idBatiment || ''), statut: 0 });
+      setFormData({ numero: '', type: 0, capacite: 1, superficie: 10, etage: 0, image: '', idBatiment: selectedBatimentId || (filteredBatiments[0]?.idBatiment || ''), statut: 0 });
     }
     setIsDrawerOpen(true);
   };
@@ -151,8 +157,8 @@ const Bureaux = () => {
               <select value={statutFilter} onChange={(e) => { setStatutFilter(e.target.value); setPage(1); }} className="form-field">
                 <option value="">Tous les statuts</option>
                 <option value="0">Disponible</option>
-                <option value="1">En maintenance</option>
-                <option value="2">Hors service</option>
+                <option value="1">Occupé</option>
+                <option value="2">En maintenance</option>
               </select>
             </div>
             <div>
@@ -195,7 +201,7 @@ const Bureaux = () => {
                 return (
                   <tr key={b.idBureau} className="hover:bg-neutral-bg/60 transition-colors">
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{b.numero}</td>
-                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-text-primary">{b.type}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-text-primary">{TypeConfig[b.type] ?? '—'}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-primary">{b.capacite} poste{b.capacite > 1 ? 's' : ''}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{b.superficie} m²</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">Étage {b.etage}</td>
@@ -230,7 +236,11 @@ const Bureaux = () => {
             </div>
             <div>
               <label className="field-label">Type d'espace</label>
-              <input type="text" value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))} className="form-field" required />
+              <select value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))} className="form-field" required>
+                <option value="0">Individuel</option>
+                <option value="1">Open space</option>
+                <option value="2">Salle de réunion</option>
+              </select>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-5">
@@ -257,11 +267,16 @@ const Bureaux = () => {
             </div>
             <div>
               <label className="field-label">Statut</label>
-              <select value={formData.statut} onChange={(e) => setFormData((p) => ({ ...p, statut: e.target.value }))} className="form-field" required>
-                <option value="0">Disponible</option>
-                <option value="1">En maintenance</option>
-                <option value="2">Hors service</option>
-              </select>
+              {parseInt(formData.statut) === 1 ? (
+                <select value={formData.statut} className="form-field" disabled>
+                  <option value="1">Occupé (géré automatiquement)</option>
+                </select>
+              ) : (
+                <select value={formData.statut} onChange={(e) => setFormData((p) => ({ ...p, statut: e.target.value }))} className="form-field" required>
+                  <option value="0">Disponible</option>
+                  <option value="2">En maintenance</option>
+                </select>
+              )}
             </div>
           </div>
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">

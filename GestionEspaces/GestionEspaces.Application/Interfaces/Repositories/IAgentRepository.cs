@@ -19,6 +19,8 @@ public interface IAgentRepository
 
     Task<bool> ExistsByMatriculeAsync(string matricule, int? excludingIdAgent, CancellationToken cancellationToken);
 
+    Task<bool> ExistsByEmailAsync(string email, int? excludingIdAgent, CancellationToken cancellationToken);
+
     Task AddAsync(Agent agent, CancellationToken cancellationToken);
 
     void Update(Agent agent);

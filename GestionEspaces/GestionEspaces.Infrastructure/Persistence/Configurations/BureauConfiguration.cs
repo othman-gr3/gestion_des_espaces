@@ -19,9 +19,6 @@ internal sealed class BureauConfiguration : IEntityTypeConfiguration<Bureau>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(bureau => bureau.Type)
-            .HasMaxLength(100);
-
         builder.Property(bureau => bureau.Superficie)
             .HasColumnType("real");
 

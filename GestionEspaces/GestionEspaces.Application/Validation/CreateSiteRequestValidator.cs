@@ -13,6 +13,8 @@ public sealed class CreateSiteRequestValidator : AbstractValidator<CreateSiteReq
         RuleFor(x => x.Ville).NotEmpty().MaximumLength(150);
         RuleFor(x => x.CodePostal).NotEmpty().MaximumLength(20);
         RuleFor(x => x.Pays).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Telephone).MaximumLength(20).When(x => !string.IsNullOrWhiteSpace(x.Telephone));
+        RuleFor(x => x.Email).MaximumLength(100).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email));
         RuleFor(x => x.Image).MaximumLength(500).When(x => !string.IsNullOrWhiteSpace(x.Image));
     }
 }

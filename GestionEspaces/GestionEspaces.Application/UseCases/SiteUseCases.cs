@@ -46,6 +46,8 @@ public sealed class SiteUseCases
             request.Nom,
             request.Code,
             new AdresseSite(request.Rue, request.Ville, request.CodePostal, request.Pays),
+            request.Telephone,
+            request.Email,
             request.Image);
 
         await _siteRepository.AddAsync(site, cancellationToken);
@@ -89,6 +91,8 @@ public sealed class SiteUseCases
             request.Nom,
             request.Code,
             new AdresseSite(request.Rue, request.Ville, request.CodePostal, request.Pays),
+            request.Telephone,
+            request.Email,
             request.Image);
 
         _siteRepository.Update(site);

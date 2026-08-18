@@ -26,7 +26,7 @@ const Sites = () => {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentSite, setCurrentSite] = useState(null);
-  const [formData, setFormData] = useState({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', image: '' });
+  const [formData, setFormData] = useState({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', telephone: '', email: '', image: '' });
   const [formError, setFormError] = useState('');
 
   const { sortedRows, sortKey, sortDir, onSort } = useSort(sites, getSortValue, 'nom');
@@ -50,10 +50,10 @@ const Sites = () => {
     setFormError('');
     if (site) {
       setCurrentSite(site);
-      setFormData({ nom: site.nom, code: site.code, rue: site.rue, ville: site.ville, codePostal: site.codePostal, pays: site.pays, image: site.image || '' });
+      setFormData({ nom: site.nom, code: site.code, rue: site.rue, ville: site.ville, codePostal: site.codePostal, pays: site.pays, telephone: site.telephone || '', email: site.email || '', image: site.image || '' });
     } else {
       setCurrentSite(null);
-      setFormData({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', image: '' });
+      setFormData({ nom: '', code: '', rue: '', ville: '', codePostal: '', pays: 'France', telephone: '', email: '', image: '' });
     }
     setIsDrawerOpen(true);
   };
@@ -129,20 +129,26 @@ const Sites = () => {
               <SortableTh label="Code" column="code" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
               <SortableTh label="Nom du site" column="nom" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
               <SortableTh label="Adresse" column="adresse" sortKey={sortKey} sortDir={sortDir} onSort={onSort} />
+              <th className="px-4 py-2.5 text-left"><span className="th-label">Contact</span></th>
               {isAdmin && <th className="px-4 py-2.5 text-right"><span className="th-label">Actions</span></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle">
             {loading ? (
-              <tr><td colSpan={isAdmin ? 4 : 3} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Chargement des données...</td></tr>
+              <tr><td colSpan={isAdmin ? 5 : 4} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Chargement des données...</td></tr>
             ) : sortedRows.length === 0 ? (
-              <tr><td colSpan={isAdmin ? 4 : 3} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Aucun site ne correspond à la recherche.</td></tr>
+              <tr><td colSpan={isAdmin ? 5 : 4} className="px-4 py-8 text-center text-[12.5px] text-text-secondary">Aucun site ne correspond à la recherche.</td></tr>
             ) : (
               sortedRows.map((site) => (
                 <tr key={site.idSite} className="hover:bg-neutral-bg/60 transition-colors">
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{site.code}</td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-medium text-text-primary">{site.nom}</td>
                   <td className="px-4 py-2.5 text-[12.5px] text-text-secondary">{site.rue}, {site.codePostal} {site.ville}, {site.pays}</td>
+                  <td className="px-4 py-2.5 text-[12.5px] text-text-secondary">
+                    {site.telephone && <div>{site.telephone}</div>}
+                    {site.email && <div>{site.email}</div>}
+                    {!site.telephone && !site.email && '—'}
+                  </td>
                   {isAdmin && (
                     <td className="whitespace-nowrap px-4 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-4">
@@ -200,6 +206,16 @@ const Sites = () => {
             <div>
               <label className="field-label">Image URL (optionnel)</label>
               <input type="text" name="image" value={formData.image} onChange={handleInputChange} className="form-field" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label className="field-label">Téléphone (optionnel)</label>
+              <input type="text" name="telephone" value={formData.telephone} onChange={handleInputChange} className="form-field" maxLength={20} />
+            </div>
+            <div>
+              <label className="field-label">Email (optionnel)</label>
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="form-field" maxLength={100} />
             </div>
           </div>
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">

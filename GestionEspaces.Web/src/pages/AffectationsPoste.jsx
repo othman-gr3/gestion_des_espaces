@@ -9,6 +9,12 @@ import Breadcrumb from '../components/Breadcrumb';
 
 const todayInputValue = () => new Date().toISOString().slice(0, 10);
 
+const TypeConfig = {
+  0: 'Individuel',
+  1: 'Open space',
+  2: 'Salle de réunion',
+};
+
 const AffectationsPoste = () => {
   const location = useLocation();
   const prefill = location.state || {};
@@ -22,6 +28,7 @@ const AffectationsPoste = () => {
   const [formAgentId, setFormAgentId] = useState('');
   const [formBureauId, setFormBureauId] = useState(prefill.bureauId ? String(prefill.bureauId) : '');
   const [formDate, setFormDate] = useState(todayInputValue());
+  const [formMotif, setFormMotif] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,7 +56,7 @@ const AffectationsPoste = () => {
 
   const bureauLabel = (idBureau) => {
     const b = bureaux.find((x) => x.idBureau === idBureau);
-    return b ? `N° ${b.numero} — ${b.type || ''}` : `Bureau ${idBureau}`;
+    return b ? `N° ${b.numero} — ${TypeConfig[b.type] || ''}` : `Bureau ${idBureau}`;
   };
   const agentLabel = (idAgent) => {
     const a = agents.find((x) => x.idAgent === idAgent);
@@ -62,9 +69,10 @@ const AffectationsPoste = () => {
     if (!formAgentId || !formBureauId) { setFormError('Sélectionnez un agent et un bureau.'); return; }
     setSubmitting(true);
     try {
-      await createOfficeAssignment(formAgentId, parseInt(formBureauId, 10), new Date(formDate).toISOString());
+      await createOfficeAssignment(formAgentId, parseInt(formBureauId, 10), new Date(formDate).toISOString(), formMotif || null);
       setFormAgentId('');
       setFormBureauId('');
+      setFormMotif('');
       loadActive();
     } catch (err) {
       console.error('Assignment error:', err);
@@ -98,7 +106,7 @@ const AffectationsPoste = () => {
           </div>
         )}
         {formError && <div className="mb-4 border-l-[3px] border-danger bg-danger/5 px-4 py-2.5 text-[13px] font-medium text-danger">{formError}</div>}
-        <form onSubmit={handleCreate} className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:items-end">
+        <form onSubmit={handleCreate} className="grid grid-cols-1 gap-4 sm:grid-cols-5 sm:items-end">
           <div>
             <label className="field-label">Agent</label>
             <select value={formAgentId} onChange={(e) => setFormAgentId(e.target.value)} className="form-field" required>
@@ -110,12 +118,16 @@ const AffectationsPoste = () => {
             <label className="field-label">Bureau disponible</label>
             <select value={formBureauId} onChange={(e) => setFormBureauId(e.target.value)} className="form-field" required>
               <option value="">Sélectionner...</option>
-              {availableBureaux.map((b) => <option key={b.idBureau} value={b.idBureau}>N° {b.numero} — {b.type} ({b.capacite} pl.)</option>)}
+              {availableBureaux.map((b) => <option key={b.idBureau} value={b.idBureau}>N° {b.numero} — {TypeConfig[b.type] || ''} ({b.capacite} pl.)</option>)}
             </select>
           </div>
           <div>
             <label className="field-label">Date de début</label>
             <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="form-field" required />
+          </div>
+          <div>
+            <label className="field-label">Motif (optionnel)</label>
+            <input type="text" value={formMotif} onChange={(e) => setFormMotif(e.target.value)} className="form-field" placeholder="Ex: réorganisation" maxLength={100} />
           </div>
           <button type="submit" disabled={submitting} className="bg-primary px-5 py-2 text-[11.5px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors disabled:opacity-50" style={{ fontFamily: 'var(--font-mono)' }}>
             {submitting ? 'Affectation...' : 'Affecter'}

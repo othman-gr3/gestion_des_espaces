@@ -38,7 +38,8 @@ public static class MappingExtensions
         affectation.IdAgent,
         affectation.IdBureau,
         affectation.DateAffectation,
-        affectation.DateFin);
+        affectation.DateFin,
+        affectation.Motif);
 
     public static AssignmentUseCaseResult ToResult(this AffectationActif affectation) => new(
         affectation.IdAffectationActif,
@@ -63,6 +64,8 @@ public static class MappingExtensions
         site.Adresse.Ville,
         site.Adresse.CodePostal,
         site.Adresse.Pays,
+        site.Telephone,
+        site.Email,
         site.Image);
 
     public static BatimentDto ToDto(this Batiment batiment) => new(

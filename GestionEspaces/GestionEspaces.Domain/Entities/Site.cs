@@ -10,6 +10,8 @@ public class Site
     public string Nom { get; private set; } = string.Empty;
     public string Code { get; private set; } = string.Empty;
     public AdresseSite Adresse { get; private set; } = null!;
+    public string? Telephone { get; private set; }
+    public string? Email { get; private set; }
     public string? Image { get; private set; }
 
     private readonly List<Batiment> _batiments = new();
@@ -19,7 +21,7 @@ public class Site
     {
     }
 
-    public Site(string nom, string code, AdresseSite adresse, string? image)
+    public Site(string nom, string code, AdresseSite adresse, string? telephone, string? email, string? image)
     {
         if (string.IsNullOrWhiteSpace(nom))
         {
@@ -34,10 +36,12 @@ public class Site
         Nom = nom.Trim();
         Code = code.Trim().ToUpperInvariant();
         Adresse = adresse ?? throw new ArgumentNullException(nameof(adresse));
+        Telephone = telephone;
+        Email = email;
         Image = image;
     }
 
-    public void MettreAJour(string nom, string code, AdresseSite adresse, string? image)
+    public void MettreAJour(string nom, string code, AdresseSite adresse, string? telephone, string? email, string? image)
     {
         if (string.IsNullOrWhiteSpace(nom))
         {
@@ -52,6 +56,8 @@ public class Site
         Nom = nom.Trim();
         Code = code.Trim().ToUpperInvariant();
         Adresse = adresse ?? throw new ArgumentNullException(nameof(adresse));
+        Telephone = telephone;
+        Email = email;
         Image = image;
     }
 

@@ -65,6 +65,17 @@ public sealed class AgentRepository : IAgentRepository
         return query.AnyAsync(cancellationToken);
     }
 
+    public Task<bool> ExistsByEmailAsync(string email, int? excludingIdAgent, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Agents.AsNoTracking().Where(agent => agent.Email != null && agent.Email.ToLower() == email.ToLower());
+        if (excludingIdAgent.HasValue)
+        {
+            query = query.Where(agent => agent.IdAgent != excludingIdAgent.Value);
+        }
+
+        return query.AnyAsync(cancellationToken);
+    }
+
     public Task AddAsync(Agent agent, CancellationToken cancellationToken)
     {
         return _dbContext.Agents.AddAsync(agent, cancellationToken).AsTask();

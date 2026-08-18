@@ -133,6 +133,14 @@ public class UseCaseTests
             return Task.FromResult(_agents.Values.Any(agent => agent.Matricule == matricule));
         }
 
+        public Task<bool> ExistsByEmailAsync(string email, int? excludingIdAgent, CancellationToken cancellationToken)
+        {
+            var exists = _agents.Values.Any(a =>
+                a.Email != null && string.Equals(a.Email, email, StringComparison.OrdinalIgnoreCase)
+                && (!excludingIdAgent.HasValue || a.IdAgent != excludingIdAgent.Value));
+            return Task.FromResult(exists);
+        }
+
         public Task<bool> ExistsByMatriculeAsync(string matricule, int? excludingIdAgent, CancellationToken cancellationToken)
         {
             var exists = _agents.Values.Any(a =>

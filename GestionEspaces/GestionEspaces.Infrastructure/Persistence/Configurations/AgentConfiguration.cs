@@ -45,6 +45,12 @@ internal sealed class AgentConfiguration : IEntityTypeConfiguration<Agent>
         builder.HasIndex(agent => agent.Matricule)
             .IsUnique();
 
+        // Filtered so multiple agents can still have no email (SQL Server treats a plain
+        // unique index as allowing only one NULL, not "NULLs are always distinct").
+        builder.HasIndex(agent => agent.Email)
+            .IsUnique()
+            .HasFilter("[Email] IS NOT NULL");
+
         builder.HasMany(agent => agent.AffectationsPoste)
             .WithOne(affectation => affectation.Agent)
             .HasForeignKey(affectation => affectation.IdAgent)
