@@ -13,6 +13,20 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 var signingKey = jwtSection["SigningKey"]
     ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
 
+const string PlaceholderSigningKey = "__SET_VIA_ENV_GestionEspaces__Jwt__SigningKey__OR_USER_SECRETS__";
+if (signingKey == PlaceholderSigningKey)
+{
+    // Non-blocking: the placeholder is a valid (if weak and publicly known) HMAC key, so
+    // local dev keeps working without extra setup — but tokens signed with it should never
+    // be trusted. Set a real key with:
+    //   dotnet user-secrets set "Jwt:SigningKey" "<random-32+-char-value>"
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine(
+        "AVERTISSEMENT: Jwt:SigningKey utilise la valeur placeholder committee dans appsettings.json. " +
+        "Définissez votre propre clé via 'dotnet user-secrets set \"Jwt:SigningKey\" \"<valeur-aleatoire>\"' avant tout usage au-delà du développement local.");
+    Console.ResetColor();
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -116,7 +130,25 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<GestionEspacesDbContext>();
-    await DbInitializer.SeedAsync(context);
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    // A freshly started `docker compose up` SQL Server container may still be initializing
+    // when the API boots right after it, so retry the first migration/seed attempt a few
+    // times with backoff instead of crashing on the very first run.
+    const int maxAttempts = 5;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await DbInitializer.SeedAsync(context);
+            break;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            logger.LogWarning(ex, "Échec de la migration/seed initiale (tentative {Attempt}/{MaxAttempts}) — nouvel essai dans {DelaySeconds}s. La base de données est peut-être encore en train de démarrer.", attempt, maxAttempts, attempt * 3);
+            await Task.Delay(TimeSpan.FromSeconds(attempt * 3));
+        }
+    }
 }
 
 app.Run();

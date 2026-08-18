@@ -1,335 +1,197 @@
 # 🏢 GestionEspaces — Système de Gestion des Espaces de Travail
 
-> Application full-stack de gestion des espaces de travail, des agents et des actifs.
-> Backend : **ASP.NET Core 8** (Clean Architecture) | Frontend : **React + Vite**
+> Portail back-office pour la gestion des sites, bâtiments, bureaux, agents et actifs de l'**ONEE** (Office National de l'Électricité et de l'Eau Potable), avec affectation des agents aux bureaux et du matériel aux agents.
+>
+> **Backend** : ASP.NET Core 10 (Clean Architecture) · **Frontend** : React 19 + Vite + Tailwind CSS v4 · **Base de données** : SQL Server
 
 ---
 
-## 📁 Structure Globale du Projet
+## 1. Présentation du projet
 
-```
-GestionEspaces/                          ← Racine du dépôt
-├── GestionEspaces/                      ← Solution .NET (backend)
-│   ├── GestionEspaces.slnx              ← Fichier solution Visual Studio
-│   ├── GestionEspaces.Api/              ← Couche API (point d'entrée HTTP)
-│   ├── GestionEspaces.Application/      ← Couche Application (logique métier)
-│   ├── GestionEspaces.Domain/           ← Couche Domaine (entités & règles)
-│   ├── GestionEspaces.Infrastructure/   ← Couche Infrastructure (BDD, repos)
-│   ├── GestionEspaces.Tests/            ← Tests unitaires
-│   └── GestionEspaces.IntegrationTests/ ← Tests d'intégration
-├── GestionEspaces.Web/                  ← Application frontend (React)
-├── global.json                          ← Version du SDK .NET ciblée
-└── .gitignore                           ← Fichiers ignorés par Git
-```
+GestionEspaces répond à un cahier des charges centré sur **7 entités** : `Site`, `Batiment`, `Bureau`, `Agent`, `Actif`, `AffectationPoste` (agent ↔ bureau) et `AffectationActif` (agent ↔ matériel). L'application couvre le cycle complet : consultation et administration du référentiel, recherche de bureaux disponibles, création et clôture d'affectations, historique, et consultation en libre-service par l'agent de ses propres données.
 
----
+Trois rôles se partagent l'application :
 
-## 🔷 Backend — Clean Architecture (.NET 8)
-
-Le backend suit la **Clean Architecture** avec une séparation stricte en 4 couches.
-
----
-
-### 1️⃣ `GestionEspaces.Domain` — Couche Domaine
-
-> Coeur de l'application. Contient les règles métier pures, sans dépendance externe.
-
-```
-GestionEspaces.Domain/
-├── GestionEspaces.Domain.csproj
-├── Entities/
-│   ├── Actif.cs                  ← Entité représentant un actif (équipement, matériel)
-│   ├── AffectationActif.cs       ← Entité d'affectation d'un actif à un agent
-│   ├── AffectationPoste.cs       ← Entité d'affectation d'un agent à un poste/bureau
-│   ├── Agent.cs                  ← Entité Agent (employé ou utilisateur du système)
-│   ├── Batiment.cs               ← Entité Bâtiment (appartient à un Site)
-│   ├── Bureau.cs                 ← Entité Bureau (espace de travail dans un Bâtiment)
-│   └── Site.cs                   ← Entité Site (lieu géographique principal)
-├── Exceptions/
-│   ├── DomainException.cs              ← Exception de base pour le domaine
-│   ├── BusinessRuleViolationException.cs ← Levée quand une règle métier est violée
-│   └── ConcurrencyConflictException.cs   ← Levée en cas de conflit de concurrence (DB)
-├── ValueObjects/
-│   └── AdresseSite.cs            ← Value Object représentant l'adresse d'un Site
-├── Repositories/                 ← (vide) Interfaces de repos définies dans Application
-└── Services/                     ← (vide) Services domaine futurs
-```
-
----
-
-### 2️⃣ `GestionEspaces.Application` — Couche Application
-
-> Orchestre les cas d'usage. Définit les contrats (interfaces), les DTOs et la logique applicative.
-
-```
-GestionEspaces.Application/
-├── GestionEspaces.Application.csproj
-├── Common/
-│   ├── Result.cs                 ← Wrapper générique de résultat (succès / erreur)
-│   ├── PagedResult.cs            ← Wrapper de résultat paginé
-│   ├── ErrorDetail.cs            ← Objet de détail d'une erreur
-│   └── MappingExtensions.cs      ← Extensions de mapping Entités <-> DTOs
-├── Interfaces/
-│   ├── IUnitOfWork.cs            ← Interface du patron Unit of Work (transaction DB)
-│   └── Repositories/             ← Interfaces des repositories par entité
-│       ├── IActifRepository.cs
-│       ├── IAgentRepository.cs
-│       ├── IBatimentRepository.cs
-│       ├── IBureauRepository.cs
-│       ├── ISiteRepository.cs
-│       └── IAffectationRepository.cs
-├── DTOs/                         ← Objets de Transfert de Données (Requêtes & Réponses)
-│   ├── Actifs/
-│   │   ├── ActifDto.cs               ← DTO de réponse pour un Actif
-│   │   ├── CreateActifRequest.cs     ← DTO de création d'un Actif
-│   │   ├── UpdateActifRequest.cs     ← DTO de mise à jour d'un Actif
-│   │   └── SearchActifsRequest.cs    ← DTO de recherche/filtrage d'Actifs
-│   ├── Agents/
-│   │   ├── AgentDto.cs               ← DTO de réponse pour un Agent
-│   │   ├── CreateAgentRequest.cs     ← DTO de création d'un Agent
-│   │   ├── UpdateAgentRequest.cs     ← DTO de mise à jour d'un Agent
-│   │   └── SearchAgentsRequest.cs    ← DTO de recherche d'Agents
-│   ├── Assignments/                  ← DTOs pour les affectations
-│   ├── Batiments/                    ← DTOs pour les Bâtiments
-│   ├── Bureaux/                      ← DTOs pour les Bureaux
-│   └── Sites/                        ← DTOs pour les Sites
-├── UseCases/                     ← Cas d'usage (logique applicative par fonctionnalité)
-│   ├── ActifUseCases.cs              ← CRUD et recherche des Actifs
-│   ├── AgentUseCases.cs              ← CRUD et recherche des Agents
-│   ├── BatimentUseCases.cs           ← CRUD et recherche des Bâtiments
-│   ├── BureauUseCases.cs             ← CRUD et recherche des Bureaux
-│   ├── SiteUseCases.cs               ← CRUD et recherche des Sites
-│   ├── CreateAgentUseCase.cs         ← Cas d'usage dédié à la création d'un Agent
-│   ├── AssignAgentToOfficeUseCase.cs ← Affecte un Agent à un Bureau
-│   ├── AssignAssetToAgentUseCase.cs  ← Affecte un Actif à un Agent
-│   ├── CloseAffectationActifUseCase.cs  ← Clôture une affectation d'actif
-│   ├── CloseAffectationPosteUseCase.cs  ← Clôture une affectation de poste
-│   ├── QueryAffectationsUseCase.cs   ← Interroge/liste les affectations
-│   └── AgentSelfServiceUseCase.cs    ← Self-service Agent : son bureau actuel, ses actifs affectés
-├── Validation/                   ← Validateurs FluentValidation pour chaque requête
-│   ├── CreateAgentRequestValidator.cs
-│   ├── UpdateAgentRequestValidator.cs
-│   ├── CreateActifRequestValidator.cs
-│   ├── UpdateActifRequestValidator.cs
-│   ├── CreateBatimentRequestValidator.cs
-│   ├── UpdateBatimentRequestValidator.cs
-│   ├── CreateBureauRequestValidator.cs
-│   ├── UpdateBureauRequestValidator.cs
-│   ├── CreateSiteRequestValidator.cs
-│   ├── UpdateSiteRequestValidator.cs
-│   ├── AssignAgentToOfficeRequestValidator.cs
-│   ├── AssignAssetToAgentRequestValidator.cs
-│   ├── SearchActifsRequestValidator.cs
-│   ├── SearchAgentsRequestValidator.cs
-│   ├── SearchBatimentsRequestValidator.cs
-│   ├── SearchBureauxRequestValidator.cs
-│   └── SearchSitesRequestValidator.cs
-└── DependencyInjection/
-    └── ServiceCollectionExtensions.cs  ← Enregistrement des services Application dans le conteneur DI
-```
-
----
-
-### 3️⃣ `GestionEspaces.Infrastructure` — Couche Infrastructure
-
-> Implémente les interfaces définies dans Application. Gère la base de données, l'ORM (EF Core) et la sécurité.
-
-```
-GestionEspaces.Infrastructure/
-├── GestionEspaces.Infrastructure.csproj
-├── Persistence/
-│   ├── GestionEspacesDbContext.cs          ← DbContext Entity Framework Core (accès BDD)
-│   ├── GestionEspacesDbContextFactory.cs   ← Factory pour créer le DbContext (migrations CLI)
-│   ├── DbInitializer.cs                    ← Seeding initial des données (données de démo)
-│   ├── Configurations/                     ← Configuration EF Core par entité (Fluent API)
-│   │   ├── ActifConfiguration.cs
-│   │   ├── AffectationActifConfiguration.cs
-│   │   ├── AffectationPosteConfiguration.cs
-│   │   ├── AgentConfiguration.cs
-│   │   ├── BatimentConfiguration.cs
-│   │   ├── BureauConfiguration.cs
-│   │   └── SiteConfiguration.cs
-│   ├── Migrations/                         ← Migrations EF Core (historique du schéma BDD)
-│   └── Scripts/                            ← Scripts SQL additionnels
-├── Repositories/                           ← Implémentations concrètes des interfaces de repos
-│   ├── ActifRepository.cs
-│   ├── AgentRepository.cs
-│   ├── AffectationRepository.cs
-│   ├── BatimentRepository.cs
-│   ├── BureauRepository.cs
-│   ├── SiteRepository.cs
-│   └── UnitOfWork.cs                       ← Implémentation du Unit of Work (commit de transaction)
-├── Security/                               ← (réservé) Sécurité, JWT, hashage...
-└── DependencyInjection/
-    └── ServiceCollectionExtensions.cs      ← Enregistrement des services Infrastructure (DbContext, repos...)
-```
-
----
-
-### 4️⃣ `GestionEspaces.Api` — Couche API (Point d'entrée)
-
-> Expose les endpoints REST HTTP. Reçoit les requêtes, délègue aux cas d'usage, retourne les réponses.
-
-```
-GestionEspaces.Api/
-├── GestionEspaces.Api.csproj
-├── Program.cs                        ← Point d'entrée de l'application, configuration du pipeline HTTP
-├── appsettings.json                  ← Configuration générale (connexion BDD, JWT...)
-├── appsettings.Development.json      ← Surcharge de configuration pour le développement
-├── GestionEspaces.Api.http           ← Fichier de tests HTTP (VS Code REST Client / Rider)
-├── Controllers/
-│   ├── AuthController.cs             ← Endpoints d'authentification (login, token JWT)
-│   ├── AgentsController.cs           ← CRUD Agents, affectations de postes/actifs, self-service /me
-│   ├── ActifsController.cs           ← CRUD Actifs (équipements)
-│   ├── BatimentsController.cs        ← CRUD Bâtiments
-│   ├── BureauxController.cs          ← CRUD Bureaux
-│   └── SitesController.cs            ← CRUD Sites
-├── Middleware/
-│   └── ExceptionHandlingMiddleware.cs ← Intercepte les exceptions non gérées, retourne JSON structuré
-├── Common/
-│   └── ControllerResultExtensions.cs  ← Extensions pour convertir Result<T> en IActionResult HTTP
-└── Properties/
-    └── launchSettings.json            ← Profils de lancement (ports, HTTPS, variables d'env)
-```
-
----
-
-### 5️⃣ `GestionEspaces.Tests` — Tests Unitaires
-
-```
-GestionEspaces.Tests/
-├── GestionEspaces.Tests.csproj
-├── Application/
-│   └── UseCaseTests.cs           ← Tests unitaires des cas d'usage (avec mocks des repositories)
-└── Domain/
-    └── AssignmentRulesTests.cs   ← Tests des règles métier d'affectation (logique domaine pure)
-```
-
----
-
-### 6️⃣ `GestionEspaces.IntegrationTests` — Tests d'Intégration
-
-```
-GestionEspaces.IntegrationTests/
-├── GestionEspaces.IntegrationTests.csproj
-├── Actifs/          ← Tests d'intégration pour les endpoints Actifs
-├── Affectations/    ← Tests d'intégration pour les affectations
-├── Agents/          ← Tests d'intégration pour les endpoints Agents
-├── Authorization/   ← Tests d'intégration RBAC (rôles Administrateur/Gestionnaire/Agent)
-├── Bureaux/         ← Tests d'intégration pour les endpoints Bureaux
-├── Sites/           ← Tests d'intégration pour les endpoints Sites
-└── Infrastructure/  ← Helpers partagés (WebApplicationFactory, base de données de test...)
-```
-
----
-
-## 🔶 Frontend — `GestionEspaces.Web` (React + Vite)
-
-> Interface utilisateur moderne construite avec **React 18** et **Vite** comme bundler.
-
-```
-GestionEspaces.Web/
-├── index.html                    ← Point d'entrée HTML de l'application SPA
-├── vite.config.js                ← Configuration Vite (proxy API, plugins...)
-├── package.json                  ← Dépendances npm et scripts (dev, build...)
-├── .oxlintrc.json                ← Configuration du linter Oxlint
-├── public/                       ← Fichiers statiques servis tels quels
-└── src/
-    ├── main.jsx                  ← Point d'entrée React (monte <App /> dans le DOM)
-    ├── App.jsx                   ← Composant racine : définit les routes (React Router)
-    ├── App.css                   ← Styles globaux de l'application
-    ├── index.css                 ← Reset CSS et variables de design (couleurs, fonts...)
-    ├── assets/                   ← Images, icônes et autres ressources statiques
-    ├── components/
-    │   ├── AppShell.jsx          ← Layout principal : sidebar, navbar, zone de contenu
-    │   └── ProtectedRoute.jsx    ← HOC qui redirige vers /login si non authentifié
-    ├── context/
-    │   └── AuthContext.jsx       ← Context React pour l'état d'authentification (token, user)
-    ├── hooks/
-    │   └── useAuth.js            ← Hook personnalisé pour accéder au contexte Auth
-    ├── services/
-    │   └── api.js                ← Instance Axios configurée (baseURL, intercepteurs JWT)
-    └── pages/
-        ├── Login.jsx             ← Page de connexion (formulaire email/mot de passe)
-        ├── Dashboard.jsx         ← Tableau de bord principal (statistiques, vue d'ensemble)
-        ├── Agents.jsx            ← Page de gestion des Agents (liste, création, édition, affectation)
-        ├── Assets.jsx            ← Page de gestion des Actifs / Équipements
-        ├── Sites.jsx             ← Page de gestion des Sites et Bâtiments
-        └── Spaces.jsx            ← Page de gestion des Bureaux / Espaces de travail
-```
-
----
-
-## 🏛️ Architecture Globale
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                   GestionEspaces.Web                     │
-│              React + Vite (Port 5173)                    │
-│    Login | Dashboard | Agents | Sites | Actifs           │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTP / REST (JSON)
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                  GestionEspaces.Api                      │
-│            ASP.NET Core 8 (Port 5001)                   │
-│   Controllers | Middleware | JWT Auth | Swagger          │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│              GestionEspaces.Application                  │
-│       UseCases | DTOs | Interfaces | Validators          │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-           ┌───────────┴───────────┐
-           ▼                       ▼
-┌──────────────────┐   ┌──────────────────────────────────┐
-│ GestionEspaces   │   │     GestionEspaces.Infrastructure │
-│   .Domain        │   │  Repositories | EF Core | DbContext│
-│ Entities | Rules │   │  Migrations | Seeding              │
-└──────────────────┘   └──────────────────────┬───────────┘
-                                              │
-                                              ▼
-                                    ┌─────────────────┐
-                                    │   SQL Server /  │
-                                    │   SQLite (BDD)  │
-                                    └─────────────────┘
-```
-
----
-
-## ⚙️ Fichiers de Configuration
-
-| Fichier | Description |
+| Rôle | Ce qu'il peut faire |
 |---|---|
-| `global.json` | Fixe la version du SDK .NET utilisée par le projet |
-| `GestionEspaces.slnx` | Fichier solution VS — référence tous les projets .NET |
-| `appsettings.json` | Configuration de l'API (chaîne de connexion BDD, JWT secret, CORS...) |
-| `appsettings.Development.json` | Surcharge pour le mode développement (logs verbeux...) |
-| `vite.config.js` | Configuration Vite : proxy `/api` vers le backend, port du dev server |
-| `package.json` | Dépendances npm du frontend (React, Axios, React Router...) |
-| `.gitignore` | Exclut `node_modules`, `bin`, `obj`, secrets... |
-| `.oxlintrc.json` | Règles du linter JavaScript/JSX (Oxlint) |
+| **Administrateur** | Gère l'intégralité du référentiel (Sites, Bâtiments, Bureaux, Agents, Actifs) et consulte le tableau de bord global. |
+| **Gestionnaire** | Recherche dans le référentiel (lecture seule) pour créer et clôturer des affectations de poste et d'actif au quotidien. Aucun droit d'écriture sur le référentiel. |
+| **Agent** | Consulte uniquement ses propres données : son bureau actuel et les actifs qui lui sont confiés. |
 
 ---
 
-## 🧩 Flux de Données — Exemple : Créer un Agent
+## 2. Stack technique
+
+**Backend**
+- ASP.NET Core 10, architecture en couches (Clean Architecture / ports & adapters)
+- Entity Framework Core 10 + SQL Server (concurrence optimiste via `rowversion`)
+- FluentValidation, authentification JWT Bearer, RBAC par policies
+- xUnit (tests unitaires en mémoire) + Testcontainers (tests d'intégration sur un vrai SQL Server dans Docker)
+
+**Frontend**
+- React 19, React Router 7, Vite 8
+- Tailwind CSS v4 (design back-office : tableaux denses, tri, pagination, tiroirs latéraux pour les formulaires)
+- Axios pour les appels API
+
+---
+
+## 3. Architecture
+
+### Couches backend
 
 ```
-1. [Frontend] Agents.jsx          → POST /api/agents  (JSON: CreateAgentRequest)
-2. [API]      AgentsController    → valide le token JWT
-3. [API]      AgentsController    → appelle CreateAgentUseCase
-4. [Application] CreateAgentUseCase
-                 → valide via CreateAgentRequestValidator (FluentValidation)
-                 → appelle IAgentRepository.AddAsync()
-                 → appelle IUnitOfWork.CommitAsync()
-5. [Infrastructure] AgentRepository → INSERT en base via EF Core
-6. [Infrastructure] UnitOfWork       → SaveChangesAsync()
-7. [API]      retourne 201 Created + AgentDto (JSON)
-8. [Frontend] Agents.jsx          → met à jour l'état React, affiche l'agent créé
+GestionEspaces.Domain          → entités, value objects, règles métier pures
+        ↑
+GestionEspaces.Application     → cas d'usage, DTOs, interfaces de repository, validation
+        ↑
+GestionEspaces.Infrastructure  → EF Core, repositories, migrations
+GestionEspaces.Api             → contrôleurs REST, JWT, policies, Swagger
+```
+
+Détail complet des couches, du schéma de données et des invariants métier : voir [`GestionEspaces/README.md`](GestionEspaces/README.md) (référence technique).
+
+### Modèle de rôles (RBAC)
+
+| Policy | Rôles autorisés | Portée |
+|---|---|---|
+| `ReferentielAdmin` | Administrateur | Création/modification/suppression sur Sites, Bâtiments, Bureaux, Agents, Actifs |
+| `ReferentielLecture` | Administrateur, Gestionnaire | Lecture seule sur le référentiel (nécessaire au Gestionnaire pour sélectionner un agent/bureau/actif lors d'une affectation) |
+| `GestionAffectations` | Administrateur, Gestionnaire | Création et clôture des `AffectationPoste` / `AffectationActif` |
+| `LectureAgent` | Agent | `GET /api/agents/me/office` et `GET /api/agents/me/assets` — l'agent est identifié via son claim JWT, jamais via un id dans l'URL |
+
+---
+
+## 4. Démarche de développement
+
+Le projet a évolué en plusieurs étapes à partir d'une base Clean Architecture existante :
+
+1. **Alignement sur le cahier des charges validé** — une fonctionnalité de réservation temporaire de bureau (`Reservation`) avait été ajoutée hors périmètre ; elle a été entièrement retirée (entité, migration inverse, endpoints, tests, page frontend) pour ne garder que les 7 entités confirmées.
+2. **Mise en place du RBAC à 3 rôles** — remplacement du modèle initial à 2 rôles (Lecteur/Gestionnaire) par le modèle Administrateur/Gestionnaire/Agent défini au cahier des charges, avec ajout des endpoints self-service `me/office` et `me/assets` pour l'Agent, et des comptes de test seedés pour chaque rôle.
+3. **Ouverture d'un accès lecture au Gestionnaire** (`ReferentielLecture`) — en construisant les pages Gestionnaire (recherche de bureau, création d'affectation), il est apparu que le Gestionnaire avait besoin de lire le référentiel pour sélectionner un agent/bureau/actif, sans quoi il ne pouvait pas faire son travail quotidien malgré des droits d'affectation valides.
+4. **Refonte du frontend en outil back-office** — passage d'un style vitrine à un style outil de gestion interne : tableaux denses avec tri/pagination, formulaires en tiroir latéral, fil d'ariane, badges de statut sobres, navigation groupée par rôle. Création des pages manquantes par rôle (`Batiments`, `Bureaux` séparés, `RechercheBureaux`, `AffectationsPoste`, `AffectationsActif`, `HistoriqueAffectations`, `MonBureau`, `MesActifs`).
+5. **Portabilité "clone & run"** — remplacement de la dépendance à une instance SQL Server locale nommée par un `docker-compose.yml` autonome, ajout d'un retry au démarrage pour tolérer une base encore en cours d'initialisation, et documentation complète (ce fichier).
+
+---
+
+## 5. Prérequis
+
+- [.NET SDK 10](https://dotnet.microsoft.com/download) (version exacte pinée dans `global.json`)
+- [Node.js](https://nodejs.org/) 20+ et npm
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (pour la base de données locale via `docker-compose.yml`, et pour les tests d'intégration)
+
+---
+
+## 6. Installation et démarrage rapide
+
+```bash
+# 1. Cloner le dépôt
+git clone https://github.com/othman-gr3/gestion_des_espaces.git
+cd gestion_des_espaces
+
+# 2. Démarrer la base de données SQL Server (Docker)
+docker compose up -d
+
+# 3. Appliquer les migrations EF Core
+cd GestionEspaces
+dotnet ef database update --project GestionEspaces.Infrastructure/GestionEspaces.Infrastructure.csproj --startup-project GestionEspaces.Api/GestionEspaces.Api.csproj
+
+# 4. Lancer le backend (écoute sur http://localhost:5153, Swagger sur /swagger)
+dotnet run --project GestionEspaces.Api/GestionEspaces.Api.csproj
+```
+
+Dans un second terminal :
+
+```bash
+# 5. Lancer le frontend (écoute sur http://localhost:5173)
+cd GestionEspaces.Web
+npm install
+npm run dev
+```
+
+Ouvrez `http://localhost:5173` : les migrations et le jeu de données de démonstration (2 sites, 3 bâtiments, 7 bureaux, 7 agents, 7 actifs) sont appliqués automatiquement au premier démarrage du backend — aucune étape manuelle de seed n'est nécessaire.
+
+> **Connexion à un SQL Server existant plutôt qu'au conteneur Docker ?** Créez un fichier `GestionEspaces/GestionEspaces.Api/appsettings.Development.json` (ignoré par git) avec votre propre `ConnectionStrings:GestionEspacesDatabase` — il prend le pas sur la valeur par défaut d'`appsettings.json`.
+
+> **Clé de signature JWT** : `appsettings.json` contient une clé de développement placeholder qui fonctionne telle quelle en local (avertissement affiché au démarrage). Pour définir la vôtre : `dotnet user-secrets set "Jwt:SigningKey" "<valeur-aléatoire-32-caractères-minimum>"` depuis `GestionEspaces.Api/`.
+
+---
+
+## 7. Comptes de test
+
+Seedés dans `appsettings.json` → `Users`, un compte par rôle :
+
+| Email | Mot de passe | Rôle |
+|---|---|---|
+| `admin@onee.ma` | `Admin123!` | Administrateur |
+| `gestionnaire@onee.ma` | `Gestion123!` | Gestionnaire |
+| `y.elamrani@onee.ma` | `Agent123!` | Agent (lié à l'agent "Youssef El Amrani", qui a un bureau et des actifs déjà affectés — utile pour tester le self-service) |
+
+---
+
+## 8. Lancer les tests
+
+```bash
+cd GestionEspaces
+
+# Tests unitaires — en mémoire, ne nécessitent PAS Docker
+dotnet test GestionEspaces.Tests/GestionEspaces.Tests.csproj
+
+# Tests d'intégration — nécessitent Docker Desktop actif (SQL Server via Testcontainers)
+dotnet test GestionEspaces.IntegrationTests/GestionEspaces.IntegrationTests.csproj
+
+# Les deux à la fois
+dotnet test GestionEspaces.slnx
 ```
 
 ---
 
-*Généré automatiquement — GestionEspaces © 2026*
+## 9. Dépannage
+
+### Docker ne répond pas / `Docker is either not running or misconfigured`
+
+Erreur typique rencontrée en développement :
+```
+System.ArgumentException : Docker is either not running or misconfigured...
+```
+
+1. Vérifiez que le démon répond : `docker ps`. Si la commande échoue ou reste bloquée, Docker Desktop n'est pas complètement démarré.
+2. Redémarrez Docker Desktop entièrement (fermer puis relancer l'application, pas juste la fenêtre).
+3. Si le problème persiste sous Windows, vérifiez WSL2 : `wsl --status`, puis `wsl --shutdown` suivi d'un redémarrage de Docker Desktop.
+4. **Fonctionnalité "Docker AI" / "Ask Gordon"** : si les logs de Docker Desktop montrent une erreur du type `initializing Inference manager: ... The filename, directory name, or volume label syntax is incorrect`, désactivez cette fonctionnalité bêta (Docker Desktop → Paramètres → Beta features → désactiver Docker AI) — elle peut empêcher le démon de démarrer correctement.
+5. Dans Docker Desktop → Paramètres → General, activez *"Start Docker Desktop when you log in"* pour éviter que le démon soit éteint entre deux sessions de travail.
+6. Rappel : seuls les **tests d'intégration** et l'usage du `docker-compose.yml` nécessitent Docker. Le backend, le frontend et les tests unitaires n'en dépendent pas.
+
+### Le port 1433 est déjà utilisé
+
+Si vous avez déjà une instance SQL Server locale sur le port 1433, changez le mapping de port dans `docker-compose.yml` (ex. `"1434:1433"`) et mettez à jour la chaîne de connexion en conséquence, ou utilisez votre instance existante via `appsettings.Development.json` (voir section 6).
+
+### `dotnet ef database update` échoue juste après `docker compose up -d`
+
+Le conteneur SQL Server met quelques secondes à être prêt après son démarrage. Réessayez la commande après quelques secondes, ou vérifiez `docker inspect --format='{{.State.Health.Status}}' gestionespaces-db` (doit afficher `healthy`). Le backend lui-même retente automatiquement (5 tentatives avec délai croissant) au premier lancement pour absorber ce délai.
+
+---
+
+## 10. Structure du projet
+
+```
+gestion_des_espaces/
+├── docker-compose.yml                   ← Base SQL Server locale (voir section 6)
+├── GestionEspaces/                      ← Solution .NET (backend)
+│   ├── GestionEspaces.slnx
+│   ├── GestionEspaces.Domain/           ← Entités, value objects, règles métier
+│   ├── GestionEspaces.Application/      ← Use cases, DTOs, interfaces, validation
+│   ├── GestionEspaces.Infrastructure/   ← EF Core, repositories, migrations
+│   ├── GestionEspaces.Api/              ← Contrôleurs, JWT, policies, Swagger
+│   ├── GestionEspaces.Tests/            ← Tests unitaires
+│   ├── GestionEspaces.IntegrationTests/ ← Tests d'intégration (Testcontainers)
+│   └── README.md                        ← Référence technique détaillée (anglais)
+├── GestionEspaces.Web/                  ← Frontend React
+│   └── src/
+│       ├── pages/                       ← Une page par écran, organisées par rôle
+│       ├── components/                  ← Composants partagés (Drawer, Breadcrumb, StatusBadge...)
+│       └── services/                    ← Client API (Axios)
+├── global.json                          ← Version du SDK .NET ciblée
+└── .gitignore
+```
+
+Détail complet des couches, du schéma de données, des invariants métier et des mécanismes de concurrence optimiste : voir [`GestionEspaces/README.md`](GestionEspaces/README.md).
