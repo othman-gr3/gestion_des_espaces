@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,7 +19,9 @@ public sealed class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    // Brute-force mitigation: caps login attempts per client IP (see Program.cs "LoginPolicy").
     [HttpPost("login")]
+    [EnableRateLimiting("LoginPolicy")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
@@ -76,7 +79,7 @@ public sealed class AuthController : ControllerBase
             if (hashBytes.Length != 48) return false;
             var salt = hashBytes[..16];
             var expected = hashBytes[16..];
-            var actual = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
+            var actual = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);
             return CryptographicOperations.FixedTimeEquals(actual, expected);
         }
         catch

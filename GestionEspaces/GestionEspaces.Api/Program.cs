@@ -5,8 +5,10 @@ using GestionEspaces.Infrastructure.Persistence;
 using GestionEspaces.Api.Middleware;
 using GestionEspaces.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +67,25 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("LectureAgent", policy =>
         policy.RequireRole("Agent"));
+});
+
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+// "LoginPolicy": caps login attempts per client IP to slow down credential-guessing
+// against /api/auth/login, which has no other throttling since it's anonymous by design.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("LoginPolicy", httpContext =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 4,
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddCors(options =>
@@ -126,6 +147,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
