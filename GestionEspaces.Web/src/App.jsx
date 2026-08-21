@@ -18,6 +18,7 @@ import AffectationsActif from './pages/AffectationsActif';
 import HistoriqueAffectations from './pages/HistoriqueAffectations';
 import MonBureau from './pages/MonBureau';
 import MesActifs from './pages/MesActifs';
+import JournalAudit from './pages/JournalAudit';
 
 // Landing page at "/" — each role has a different home, since only
 // Administrateur can read the referentiel endpoints the Dashboard calls.
@@ -51,6 +52,7 @@ function App() {
             <Route path="bureaux" element={<ProtectedRoute requiredRole="Administrateur"><Bureaux /></ProtectedRoute>} />
             <Route path="agents" element={<ProtectedRoute requiredRole="Administrateur"><Agents /></ProtectedRoute>} />
             <Route path="actifs" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Assets /></ProtectedRoute>} />
+            <Route path="journal-audit" element={<ProtectedRoute requiredRole="Administrateur"><JournalAudit /></ProtectedRoute>} />
 
             {/* Administrateur + Gestionnaire — affectations (matches the backend's GestionAffectations/ReferentielLecture policies) */}
             <Route path="rechercher-bureau" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><RechercheBureaux /></ProtectedRoute>} />

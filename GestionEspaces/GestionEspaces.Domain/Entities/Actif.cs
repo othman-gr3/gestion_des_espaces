@@ -1,4 +1,6 @@
-﻿using GestionEspaces.Domain.Exceptions;
+﻿using GestionEspaces.Domain.Common;
+using GestionEspaces.Domain.Events;
+using GestionEspaces.Domain.Exceptions;
 
 namespace GestionEspaces.Domain.Entities;
 
@@ -10,7 +12,7 @@ public enum EtatActif
     HorsService
 }
 
-public class Actif
+public class Actif : EntityBase
 {
     public int IdActif { get; private set; }
     public byte[] Version { get; private set; } = Array.Empty<byte>();
@@ -86,6 +88,8 @@ public class Actif
         var affectation = new AffectationActif(agent, this, dateAffectation);
         _affectations.Add(affectation);
         agent.AjouterAffectationActif(affectation);
+
+        RaiseDomainEvent(new ActifAffecteEvent(IdActif, agent.IdAgent, dateAffectation));
 
         return affectation;
     }

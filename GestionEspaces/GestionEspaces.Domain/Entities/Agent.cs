@@ -1,8 +1,10 @@
+using GestionEspaces.Domain.Common;
+using GestionEspaces.Domain.Events;
 using GestionEspaces.Domain.Exceptions;
 
 namespace GestionEspaces.Domain.Entities;
 
-public class Agent
+public class Agent : EntityBase
 {
     public int IdAgent { get; private set; }
     public byte[] Version { get; private set; } = Array.Empty<byte>();
@@ -94,6 +96,8 @@ public class Agent
         _affectationsPoste.Add(affectation);
         bureau.AjouterAffectationPoste(affectation);
         bureau.MarquerOccupe();
+
+        RaiseDomainEvent(new AgentAffecteAuBureauEvent(IdAgent, bureau.IdBureau, bureau.Numero, dateAffectation));
 
         return affectation;
     }

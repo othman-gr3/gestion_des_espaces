@@ -1,7 +1,9 @@
 using GestionEspaces.Application.DependencyInjection;
+using GestionEspaces.Application.Interfaces;
 using GestionEspaces.Infrastructure.DependencyInjection;
 using GestionEspaces.Infrastructure.Persistence;
 using GestionEspaces.Api.Middleware;
+using GestionEspaces.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -80,6 +82,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();

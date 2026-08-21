@@ -1,4 +1,7 @@
-﻿namespace GestionEspaces.Domain.Entities;
+﻿using GestionEspaces.Domain.Common;
+using GestionEspaces.Domain.Events;
+
+namespace GestionEspaces.Domain.Entities;
 
 public enum StatutBureau
 {
@@ -14,7 +17,7 @@ public enum TypeBureau
     SalleReunion
 }
 
-public class Bureau
+public class Bureau : EntityBase
 {
     public int IdBureau { get; private set; }
     public byte[] Version { get; private set; } = Array.Empty<byte>();
@@ -72,8 +75,18 @@ public class Bureau
         IdBatiment = idBatiment;
     }
 
-    public void MettreEnMaintenance() => Statut = StatutBureau.EnMaintenance;
-    public void RemettreEnService() => Statut = StatutBureau.Disponible;
+    public void MettreEnMaintenance()
+    {
+        Statut = StatutBureau.EnMaintenance;
+        RaiseDomainEvent(new BureauMisEnMaintenanceEvent(IdBureau, Numero));
+    }
+
+    public void RemettreEnService()
+    {
+        Statut = StatutBureau.Disponible;
+        RaiseDomainEvent(new BureauRemisEnServiceEvent(IdBureau, Numero));
+    }
+
     public bool EstDisponible() => Statut == StatutBureau.Disponible;
 
     /// <summary>

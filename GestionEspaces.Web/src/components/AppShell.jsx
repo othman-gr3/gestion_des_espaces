@@ -27,6 +27,12 @@ const NAV_GROUPS = {
         ],
       },
       AFFECTATIONS_GROUP,
+      {
+        label: 'Sécurité',
+        items: [
+          { name: "Journal d'audit", path: '/journal-audit' },
+        ],
+      },
     ],
   },
   Gestionnaire: {

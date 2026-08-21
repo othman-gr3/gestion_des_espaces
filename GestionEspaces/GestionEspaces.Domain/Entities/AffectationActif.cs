@@ -1,8 +1,10 @@
+using GestionEspaces.Domain.Common;
+using GestionEspaces.Domain.Events;
 using GestionEspaces.Domain.Exceptions;
 
 namespace GestionEspaces.Domain.Entities;
 
-public class AffectationActif
+public class AffectationActif : EntityBase
 {
     public int IdAffectationActif { get; private set; }
     public int IdAgent { get; private set; }
@@ -48,5 +50,7 @@ public class AffectationActif
         DateFin = dateFin.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(dateFin, DateTimeKind.Utc)
             : dateFin;
+
+        RaiseDomainEvent(new AffectationActifClotureeEvent(IdAffectationActif, IdAgent, IdActif, DateFin.Value));
     }
 }
