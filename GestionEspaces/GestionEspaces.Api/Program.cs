@@ -1,5 +1,6 @@
 using GestionEspaces.Application.DependencyInjection;
 using GestionEspaces.Application.Interfaces;
+using GestionEspaces.Infrastructure.Ai;
 using GestionEspaces.Infrastructure.DependencyInjection;
 using GestionEspaces.Infrastructure.Persistence;
 using GestionEspaces.Api.Middleware;
@@ -86,6 +87,19 @@ builder.Services.AddRateLimiter(options =>
                 SegmentsPerWindow = 4,
                 QueueLimit = 0
             }));
+
+    // "AiSearchPolicy": the AI office search calls a paid external API per request —
+    // authenticated users already, but still worth capping against runaway cost.
+    options.AddPolicy("AiSearchPolicy", httpContext =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 4,
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddCors(options =>
@@ -107,6 +121,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpClient<IOfficeSearchAssistant, OpenRouterOfficeSearchAssistant>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

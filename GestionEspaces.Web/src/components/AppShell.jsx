@@ -12,6 +12,13 @@ const AFFECTATIONS_GROUP = {
   ],
 };
 
+const AI_GROUP = {
+  label: 'Intelligence artificielle',
+  items: [
+    { name: 'Recherche IA', path: '/recherche-ia' },
+  ],
+};
+
 const NAV_GROUPS = {
   Administrateur: {
     pinned: { name: 'Tableau de bord', path: '/' },
@@ -27,6 +34,7 @@ const NAV_GROUPS = {
         ],
       },
       AFFECTATIONS_GROUP,
+      AI_GROUP,
       {
         label: 'Sécurité',
         items: [
@@ -41,6 +49,7 @@ const NAV_GROUPS = {
         label: 'Affectations',
         items: [...AFFECTATIONS_GROUP.items, { name: 'Rechercher un actif', path: '/actifs' }],
       },
+      AI_GROUP,
     ],
   },
   Agent: {

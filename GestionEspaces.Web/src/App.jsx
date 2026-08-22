@@ -19,6 +19,7 @@ import HistoriqueAffectations from './pages/HistoriqueAffectations';
 import MonBureau from './pages/MonBureau';
 import MesActifs from './pages/MesActifs';
 import JournalAudit from './pages/JournalAudit';
+import RechercheIA from './pages/RechercheIA';
 
 // Landing page at "/" — each role has a different home, since only
 // Administrateur can read the referentiel endpoints the Dashboard calls.
@@ -59,6 +60,7 @@ function App() {
             <Route path="affectations-poste" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsPoste /></ProtectedRoute>} />
             <Route path="affectations-actif" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsActif /></ProtectedRoute>} />
             <Route path="historique-affectations" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><HistoriqueAffectations /></ProtectedRoute>} />
+            <Route path="recherche-ia" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><RechercheIA /></ProtectedRoute>} />
 
             {/* Agent — mon espace */}
             <Route path="mon-bureau" element={<ProtectedRoute requiredRole="Agent"><MonBureau /></ProtectedRoute>} />

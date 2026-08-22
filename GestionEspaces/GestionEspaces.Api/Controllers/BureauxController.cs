@@ -1,9 +1,11 @@
 using GestionEspaces.Api.Common;
 using GestionEspaces.Application.DTOs.Bureaux;
+using GestionEspaces.Application.DTOs.OfficeSearchAi;
 using GestionEspaces.Application.UseCases;
 using GestionEspaces.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GestionEspaces.Api.Controllers;
 
@@ -12,10 +14,12 @@ namespace GestionEspaces.Api.Controllers;
 public sealed class BureauxController : ControllerBase
 {
     private readonly BureauUseCases _bureauUseCases;
+    private readonly OfficeSearchAiUseCase _officeSearchAiUseCase;
 
-    public BureauxController(BureauUseCases bureauUseCases)
+    public BureauxController(BureauUseCases bureauUseCases, OfficeSearchAiUseCase officeSearchAiUseCase)
     {
         _bureauUseCases = bureauUseCases;
+        _officeSearchAiUseCase = officeSearchAiUseCase;
     }
 
     [HttpGet("{idBureau:int}")]
@@ -31,6 +35,17 @@ public sealed class BureauxController : ControllerBase
     public async Task<IActionResult> SearchAsync([FromQuery] int? idBatiment, [FromQuery] string? searchText, [FromQuery] StatutBureau? statut, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _bureauUseCases.SearchAsync(new SearchBureauxRequest(idBatiment, searchText, statut, pageNumber, pageSize), cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    // AI-assisted natural-language office search — translates a French free-text request
+    // into structured criteria via an LLM, degrading to keyword search if that's unavailable.
+    [HttpPost("ai-search")]
+    [Authorize(Policy = "ReferentielLecture")]
+    [EnableRateLimiting("AiSearchPolicy")]
+    public async Task<IActionResult> AiSearchAsync([FromBody] OfficeSearchAiRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _officeSearchAiUseCase.ExecuteAsync(request.Query, cancellationToken);
         return this.ToActionResult(result, Ok);
     }
 
