@@ -24,9 +24,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token: jwtToken, role, name } = response.data;
+      const { token: jwtToken, refreshToken, role, name } = response.data;
 
       localStorage.setItem('token', jwtToken);
+      localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify({ email, role, name }));
 
       setToken(jwtToken);
@@ -41,7 +42,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+      // Best-effort — revokes the refresh token server-side so it can't be replayed to
+      // mint new access tokens after this point. The local session is cleared either way.
+      api.post('/auth/logout', { refreshToken }).catch(() => {});
+    }
+
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);

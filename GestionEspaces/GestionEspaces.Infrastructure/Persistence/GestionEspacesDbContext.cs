@@ -45,6 +45,8 @@ public sealed class GestionEspacesDbContext : DbContext
 
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GestionEspacesDbContext).Assembly);
