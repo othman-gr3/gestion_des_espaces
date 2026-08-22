@@ -4,6 +4,8 @@
 >
 > **Backend** : ASP.NET Core 10 (Clean Architecture) · **Frontend** : React 19 + Vite + Tailwind CSS v4 · **Base de données** : SQL Server
 
+> **Branche `school-ai`** : cette branche contient tout ce qui est sur `main` (version remise en stage) **plus** une fonctionnalité de recherche de bureau assistée par IA (section [Intelligence artificielle](#intelligence-artificielle)), ajoutée pour le projet de fin d'études. `main` reste la version stage, sans dépendance à un service IA externe.
+
 ---
 
 ## 1. Présentation du projet
@@ -70,6 +72,23 @@ Au-delà du RBAC, plusieurs mécanismes protègent l'application :
 | **Journal d'audit persisté** | Les actions métier significatives (affectation/clôture de poste ou d'actif, mise en maintenance/remise en service d'un bureau) déclenchent un *domain event* côté `Domain`, capturé par `GestionEspacesDbContext.SaveChangesAsync` et écrit dans la table `AuditLog` **dans la même transaction** que le changement métier — avec qui (email + rôle extraits du JWT), quoi et quand. Consultable via la page *Journal d'audit* (Administrateur uniquement). |
 | **Hachage et dépendances à jour** | Mots de passe en PBKDF2-SHA256 (10 000 itérations, méthode statique `Rfc2898DeriveBytes.Pbkdf2`, non obsolète) ; dépendance `SSH.NET` épinglée à une version corrigeant une vulnérabilité connue (`GHSA-q939-rpr3-3284`) remontée par une dépendance transitive de Testcontainers. |
 
+### Intelligence artificielle
+
+*Spécifique à la branche `school-ai`.* La page **Recherche IA** (Administrateur, Gestionnaire) permet de décrire en français libre le bureau recherché — *"un bureau individuel disponible avec au moins 3 places au Siège ONEE"* — au lieu de manipuler des filtres. La requête est envoyée à un LLM via [OpenRouter](https://openrouter.ai/) (`POST /api/bureaux/ai-search`), qui la traduit en critères structurés (bâtiment, statut, type, capacité/étage minimum) à partir de la liste réelle des bâtiments et sites ; ces critères sont ensuite exécutés contre le référentiel `Bureau` existant.
+
+**Dégradation gracieuse** — pensée dès la conception, pas ajoutée après coup : si la clé API n'est pas configurée, si OpenRouter est injoignable, ou si le modèle répond quelque chose d'inexploitable, la recherche **n'échoue pas** — elle bascule automatiquement sur une recherche par mot-clé classique sur le numéro de bureau, et l'interface l'indique clairement (badge *"IA activée"* vs *"Repli mot-clé"*). C'est ce chemin de repli qui est exercé par les tests automatisés (voir ci-dessous), puisqu'aucune clé réelle n'est configurée dans l'environnement de test.
+
+**Configuration** — pour activer réellement l'appel au LLM (sinon la fonctionnalité tourne en mode repli, sans erreur) :
+
+```bash
+cd GestionEspaces
+dotnet user-secrets set "OpenRouter:ApiKey" "sk-or-..." --project GestionEspaces.Api
+```
+
+Le modèle utilisé (`openai/gpt-4o-mini` par défaut) se change dans `appsettings.json` → `OpenRouter:Model`, avec n'importe quel identifiant de modèle disponible sur OpenRouter.
+
+**Architecture** — `IOfficeSearchAssistant` (interface, `Application`) / `OpenRouterOfficeSearchAssistant` (implémentation, `Infrastructure`, injectée via `IHttpClientFactory`) / `OfficeSearchAiUseCase` (orchestration + repli, `Application`). Aucune donnée n'est persistée par cette fonctionnalité — pas de nouvelle table, pas de migration.
+
 ---
 
 ## 4. Démarche de développement
@@ -82,6 +101,7 @@ Le projet a évolué en plusieurs étapes à partir d'une base Clean Architectur
 4. **Refonte du frontend en outil back-office** — passage d'un style vitrine à un style outil de gestion interne : tableaux denses avec tri/pagination, formulaires en tiroir latéral, fil d'ariane, badges de statut sobres, navigation groupée par rôle. Création des pages manquantes par rôle (`Batiments`, `Bureaux` séparés, `RechercheBureaux`, `AffectationsPoste`, `AffectationsActif`, `HistoriqueAffectations`, `MonBureau`, `MesActifs`).
 5. **Portabilité "clone & run"** — remplacement de la dépendance à une instance SQL Server locale nommée par un `docker-compose.yml` autonome, ajout d'un retry au démarrage pour tolérer une base encore en cours d'initialisation, et documentation complète (ce fichier).
 6. **Durcissement sécurité** — après audit du modèle d'authentification existant (jeton JWT unique de 8h, sans rafraîchissement ni révocation, aucune limitation de débit sur la connexion), ajout des jetons de rafraîchissement avec rotation, de la limitation de débit, et d'un journal d'audit basé sur des *domain events* pour tracer qui a fait quoi. Correction au passage des deux avertissements remontés par `dotnet build` (API de hachage obsolète, dépendance transitive vulnérable). Détail dans la section [Durcissement sécurité](#durcissement-sécurité) ci-dessus.
+7. **Recherche IA** *(branche `school-ai` uniquement)* — ajout d'une recherche de bureau en langage naturel via un LLM (OpenRouter), avec repli automatique sur une recherche par mot-clé si le service IA est indisponible, pour que la fonctionnalité ne devienne jamais un point de défaillance. Détail dans la section [Intelligence artificielle](#intelligence-artificielle) ci-dessus. Le reste du projet reste identique à la branche `main` (version stage).
 
 ---
 
