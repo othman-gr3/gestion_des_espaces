@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, school-ai]
+  pull_request:
+    branches: [main, school-ai]
+
+jobs:
+  backend:
+    name: Backend — build & unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore GestionEspaces/GestionEspaces.slnx
+
+      - name: Build
+        run: dotnet build GestionEspaces/GestionEspaces.slnx --no-restore --configuration Release
+
+      # Only the in-memory unit tests run here — the integration tests need a live
+      # SQL Server via Testcontainers, which is out of scope for this fast build check.
+      - name: Unit tests
+        run: dotnet test GestionEspaces/GestionEspaces.Tests/GestionEspaces.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+
+  frontend:
+    name: Frontend — build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: GestionEspaces.Web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: GestionEspaces.Web
+        run: npm ci
+
+      - name: Build
+        working-directory: GestionEspaces.Web
+        run: npm run build
