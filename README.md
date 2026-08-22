@@ -59,6 +59,17 @@ Détail complet des couches, du schéma de données et des invariants métier : 
 | `GestionAffectations` | Administrateur, Gestionnaire | Création et clôture des `AffectationPoste` / `AffectationActif` |
 | `LectureAgent` | Agent | `GET /api/agents/me/office` et `GET /api/agents/me/assets` — l'agent est identifié via son claim JWT, jamais via un id dans l'URL |
 
+### Durcissement sécurité
+
+Au-delà du RBAC, plusieurs mécanismes protègent l'application :
+
+| Mécanisme | Détail |
+|---|---|
+| **Jetons JWT courts + rafraîchissement** | Le jeton d'accès expire en 30 minutes (`Jwt:AccessTokenMinutes`). Un jeton de rafraîchissement (7 jours, `Jwt:RefreshTokenDays`) permet d'en obtenir un nouveau via `POST /api/auth/refresh` sans redemander le mot de passe. Il n'est **jamais stocké en clair** côté serveur — seul son hash SHA-256 l'est — et il **tourne à chaque utilisation** : l'ancien est révoqué au moment même où le nouveau est émis, donc un jeton volé ne peut être rejoué qu'une seule fois. `POST /api/auth/logout` le révoque explicitement. |
+| **Limitation de débit sur la connexion** | `POST /api/auth/login` et `/api/auth/refresh` sont plafonnés à 10 tentatives par minute et par adresse IP (`429 Too Many Requests` au-delà), pour ralentir une attaque par force brute sur les mots de passe. |
+| **Journal d'audit persisté** | Les actions métier significatives (affectation/clôture de poste ou d'actif, mise en maintenance/remise en service d'un bureau) déclenchent un *domain event* côté `Domain`, capturé par `GestionEspacesDbContext.SaveChangesAsync` et écrit dans la table `AuditLog` **dans la même transaction** que le changement métier — avec qui (email + rôle extraits du JWT), quoi et quand. Consultable via la page *Journal d'audit* (Administrateur uniquement). |
+| **Hachage et dépendances à jour** | Mots de passe en PBKDF2-SHA256 (10 000 itérations, méthode statique `Rfc2898DeriveBytes.Pbkdf2`, non obsolète) ; dépendance `SSH.NET` épinglée à une version corrigeant une vulnérabilité connue (`GHSA-q939-rpr3-3284`) remontée par une dépendance transitive de Testcontainers. |
+
 ---
 
 ## 4. Démarche de développement
@@ -70,6 +81,7 @@ Le projet a évolué en plusieurs étapes à partir d'une base Clean Architectur
 3. **Ouverture d'un accès lecture au Gestionnaire** (`ReferentielLecture`) — en construisant les pages Gestionnaire (recherche de bureau, création d'affectation), il est apparu que le Gestionnaire avait besoin de lire le référentiel pour sélectionner un agent/bureau/actif, sans quoi il ne pouvait pas faire son travail quotidien malgré des droits d'affectation valides.
 4. **Refonte du frontend en outil back-office** — passage d'un style vitrine à un style outil de gestion interne : tableaux denses avec tri/pagination, formulaires en tiroir latéral, fil d'ariane, badges de statut sobres, navigation groupée par rôle. Création des pages manquantes par rôle (`Batiments`, `Bureaux` séparés, `RechercheBureaux`, `AffectationsPoste`, `AffectationsActif`, `HistoriqueAffectations`, `MonBureau`, `MesActifs`).
 5. **Portabilité "clone & run"** — remplacement de la dépendance à une instance SQL Server locale nommée par un `docker-compose.yml` autonome, ajout d'un retry au démarrage pour tolérer une base encore en cours d'initialisation, et documentation complète (ce fichier).
+6. **Durcissement sécurité** — après audit du modèle d'authentification existant (jeton JWT unique de 8h, sans rafraîchissement ni révocation, aucune limitation de débit sur la connexion), ajout des jetons de rafraîchissement avec rotation, de la limitation de débit, et d'un journal d'audit basé sur des *domain events* pour tracer qui a fait quoi. Correction au passage des deux avertissements remontés par `dotnet build` (API de hachage obsolète, dépendance transitive vulnérable). Détail dans la section [Durcissement sécurité](#durcissement-sécurité) ci-dessus.
 
 ---
 
@@ -171,10 +183,20 @@ Le conteneur SQL Server met quelques secondes à être prêt après son démarra
 
 ---
 
-## 10. Structure du projet
+## 10. Intégration continue
+
+Un workflow GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) s'exécute à chaque push et pull request sur `main` ou `school-ai` :
+
+- **Backend** — restauration, build en configuration `Release`, puis exécution des tests unitaires (`GestionEspaces.Tests`). Les tests d'intégration ne tournent pas en CI : ils nécessitent un vrai SQL Server via Testcontainers, ce qui alourdirait et ralentirait la vérification rapide à chaque commit.
+- **Frontend** — installation des dépendances (`npm ci`) et build de production (`npm run build`), pour détecter toute erreur de compilation avant qu'elle n'atteigne `main`.
+
+---
+
+## 11. Structure du projet
 
 ```
 gestion_des_espaces/
+├── .github/workflows/ci.yml             ← Intégration continue (voir section 10)
 ├── docker-compose.yml                   ← Base SQL Server locale (voir section 6)
 ├── GestionEspaces/                      ← Solution .NET (backend)
 │   ├── GestionEspaces.slnx
