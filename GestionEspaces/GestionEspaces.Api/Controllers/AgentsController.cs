@@ -1,6 +1,8 @@
 using GestionEspaces.Api.Common;
 using GestionEspaces.Application.DTOs.Agents;
 using GestionEspaces.Application.DTOs.Assignments;
+using GestionEspaces.Application.DTOs.Demandes;
+using GestionEspaces.Application.DTOs.SelfService;
 using GestionEspaces.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -90,7 +92,7 @@ public sealed class AgentsController : ControllerBase
     // ── Self-service (Agent role) ───────────────────────────────────────────────
 
     [HttpGet("me/office")]
-    [Authorize(Policy = "LectureAgent")]
+    [Authorize(Policy = "AccesAgent")]
     public async Task<IActionResult> GetMyOfficeAsync(CancellationToken cancellationToken)
     {
         var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -104,7 +106,7 @@ public sealed class AgentsController : ControllerBase
     }
 
     [HttpGet("me/assets")]
-    [Authorize(Policy = "LectureAgent")]
+    [Authorize(Policy = "AccesAgent")]
     public async Task<IActionResult> GetMyAssetsAsync(CancellationToken cancellationToken)
     {
         var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -115,6 +117,76 @@ public sealed class AgentsController : ControllerBase
 
         var result = await _agentSelfServiceUseCase.GetMyAssetsAsync(email, cancellationToken);
         return this.ToActionResult(result, Ok);
+    }
+
+    [HttpGet("me/history")]
+    [Authorize(Policy = "AccesAgent")]
+    public async Task<IActionResult> GetMyHistoryAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.GetMyHistoryAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpGet("me/profile")]
+    [Authorize(Policy = "AccesAgent")]
+    public async Task<IActionResult> GetMyProfileAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.GetMyProfileAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpPut("me/profile")]
+    [Authorize(Policy = "AccesAgent")]
+    public async Task<IActionResult> UpdateMyProfileAsync([FromBody] UpdateMyProfileRequest request, CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.UpdateMyProfileAsync(email, request, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpGet("me/demandes")]
+    [Authorize(Policy = "AccesAgent")]
+    public async Task<IActionResult> GetMyDemandesAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.GetMyDemandesAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpPost("me/demandes")]
+    [Authorize(Policy = "AccesAgent")]
+    public async Task<IActionResult> CreateMyDemandeAsync([FromBody] CreateDemandeRequest request, CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentSelfServiceUseCase.CreateMyDemandeAsync(email, request, cancellationToken);
+        return this.ToActionResult(result, demande => Created($"/api/agents/me/demandes", demande));
     }
 
     // ── Office assignments ────────────────────────────────────────────────────
