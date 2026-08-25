@@ -70,6 +70,16 @@ public class Agent : EntityBase
         Image = image;
     }
 
+    /// <summary>
+    /// Self-service update: an agent may correct their own phone number, and only that
+    /// field — everything else (name, matricule, email, fonction, département, image)
+    /// stays Administrateur-controlled via <see cref="MettreAJour"/>.
+    /// </summary>
+    public void MettreAJourTelephone(string? telephone)
+    {
+        Telephone = telephone;
+    }
+
     public AffectationPoste AffecterAuBureau(Bureau bureau, DateTime dateAffectation, string? motif = null)
     {
         if (bureau is null)

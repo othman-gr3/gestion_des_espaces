@@ -9,6 +9,7 @@ const AFFECTATIONS_GROUP = {
     { name: 'Affectations de poste', path: '/affectations-poste' },
     { name: "Affectations d'actifs", path: '/affectations-actif' },
     { name: 'Historique des affectations', path: '/historique-affectations' },
+    { name: 'Demandes', path: '/demandes' },
   ],
 };
 
@@ -50,6 +51,9 @@ const NAV_GROUPS = {
         items: [
           { name: 'Mon bureau', path: '/mon-bureau' },
           { name: 'Mes actifs', path: '/mes-actifs' },
+          { name: 'Mon historique', path: '/mon-historique' },
+          { name: 'Mes demandes', path: '/mes-demandes' },
+          { name: 'Mon profil', path: '/mon-profil' },
         ],
       },
     ],

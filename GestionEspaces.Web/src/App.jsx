@@ -18,6 +18,10 @@ import AffectationsActif from './pages/AffectationsActif';
 import HistoriqueAffectations from './pages/HistoriqueAffectations';
 import MonBureau from './pages/MonBureau';
 import MesActifs from './pages/MesActifs';
+import MonHistorique from './pages/MonHistorique';
+import MonProfil from './pages/MonProfil';
+import MesDemandes from './pages/MesDemandes';
+import Demandes from './pages/Demandes';
 import JournalAudit from './pages/JournalAudit';
 
 // Landing page at "/" — each role has a different home, since only
@@ -59,10 +63,14 @@ function App() {
             <Route path="affectations-poste" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsPoste /></ProtectedRoute>} />
             <Route path="affectations-actif" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><AffectationsActif /></ProtectedRoute>} />
             <Route path="historique-affectations" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><HistoriqueAffectations /></ProtectedRoute>} />
+            <Route path="demandes" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Demandes /></ProtectedRoute>} />
 
             {/* Agent — mon espace */}
             <Route path="mon-bureau" element={<ProtectedRoute requiredRole="Agent"><MonBureau /></ProtectedRoute>} />
             <Route path="mes-actifs" element={<ProtectedRoute requiredRole="Agent"><MesActifs /></ProtectedRoute>} />
+            <Route path="mon-historique" element={<ProtectedRoute requiredRole="Agent"><MonHistorique /></ProtectedRoute>} />
+            <Route path="mon-profil" element={<ProtectedRoute requiredRole="Agent"><MonProfil /></ProtectedRoute>} />
+            <Route path="mes-demandes" element={<ProtectedRoute requiredRole="Agent"><MesDemandes /></ProtectedRoute>} />
           </Route>
         </Routes>
       </Router>

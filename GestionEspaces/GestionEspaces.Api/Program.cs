@@ -53,7 +53,9 @@ builder.Services
 // Gestionnaire   → read-only referentiel access (to search/select for assignments) plus
 //                  creates/closes Affectation_Poste and Affectation_Actif; no write rights
 //                  on the referentiel itself
-// Agent          → reads only their own data (current office, assigned assets)
+// Agent          → self-service portal: reads their own data (current office, assigned
+//                  assets, history) and writes limited to their own profile/requests —
+//                  never an arbitrary agent id from the URL
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ReferentielAdmin", policy =>
@@ -65,7 +67,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("GestionAffectations", policy =>
         policy.RequireRole("Administrateur", "Gestionnaire"));
 
-    options.AddPolicy("LectureAgent", policy =>
+    options.AddPolicy("AccesAgent", policy =>
         policy.RequireRole("Agent"));
 });
 

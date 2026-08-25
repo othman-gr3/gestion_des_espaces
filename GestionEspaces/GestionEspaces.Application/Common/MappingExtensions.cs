@@ -3,6 +3,7 @@ using GestionEspaces.Application.DTOs.Assignments;
 using GestionEspaces.Application.DTOs.Actifs;
 using GestionEspaces.Application.DTOs.Batiments;
 using GestionEspaces.Application.DTOs.Bureaux;
+using GestionEspaces.Application.DTOs.Demandes;
 using GestionEspaces.Application.DTOs.Sites;
 using GestionEspaces.Domain.Entities;
 
@@ -100,4 +101,16 @@ public static class MappingExtensions
         actif.DateAchat,
         actif.Etat,
         actif.Image);
+
+    public static DemandeDto ToDto(this DemandeAgent demande) => new(
+        demande.IdDemande,
+        demande.Version.Length > 0 ? Convert.ToBase64String(demande.Version) : null,
+        demande.IdAgent,
+        $"{demande.Agent.Nom.ToUpperInvariant()} {demande.Agent.Prenom}",
+        demande.Type,
+        demande.Description,
+        demande.Statut,
+        demande.DateCreation,
+        demande.DateTraitement,
+        demande.Reponse);
 }

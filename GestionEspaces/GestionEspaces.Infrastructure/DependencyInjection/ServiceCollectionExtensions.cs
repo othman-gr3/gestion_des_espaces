@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IActifRepository, ActifRepository>();
         services.AddScoped<IAffectationRepository, AffectationRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IDemandeRepository, DemandeRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
