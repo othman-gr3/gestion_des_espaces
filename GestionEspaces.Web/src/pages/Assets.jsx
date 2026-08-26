@@ -6,6 +6,7 @@ import Drawer from '../components/Drawer';
 import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
+import EntityImage from '../components/EntityImage';
 import useSort from '../hooks/useSort';
 
 const EtatConfig = {
@@ -157,7 +158,12 @@ const Assets = () => {
                 const et = EtatConfig[a.etat] || { label: 'Inconnu', tone: 'neutral' };
                 return (
                   <tr key={a.idActif} className="hover:bg-neutral-bg/60 transition-colors">
-                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-semibold text-text-primary">{a.nom}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <EntityImage src={a.image} alt={a.nom} size={32} rounded="rounded" />
+                        <span className="text-[13px] font-semibold text-text-primary">{a.nom}</span>
+                      </div>
+                    </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{a.type}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{[a.marque, a.modele].filter(Boolean).join(' · ') || '—'}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{a.numeroSerie || '—'}</td>
@@ -227,6 +233,10 @@ const Assets = () => {
                   <option value="3">Hors service</option>
                 </select>
               </div>
+            </div>
+            <div>
+              <label className="field-label">Photo (URL, optionnel)</label>
+              <input type="text" value={formData.image} onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))} className="form-field" placeholder="https://..." />
             </div>
             <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
               <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>

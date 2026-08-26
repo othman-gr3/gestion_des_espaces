@@ -7,6 +7,7 @@ import Drawer from '../components/Drawer';
 import StatusBadge from '../components/StatusBadge';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
+import EntityImage from '../components/EntityImage';
 import useSort from '../hooks/useSort';
 
 const StatutConfig = {
@@ -200,7 +201,12 @@ const Bureaux = () => {
                 const st = StatutConfig[b.statut] || { label: 'Inconnu', tone: 'neutral' };
                 return (
                   <tr key={b.idBureau} className="hover:bg-neutral-bg/60 transition-colors">
-                    <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{b.numero}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <EntityImage src={b.image} alt={b.numero} size={32} rounded="rounded" />
+                        <span className="text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{b.numero}</span>
+                      </div>
+                    </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-text-primary">{TypeConfig[b.type] ?? '—'}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-primary">{b.capacite} poste{b.capacite > 1 ? 's' : ''}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{b.superficie} m²</td>
@@ -278,6 +284,10 @@ const Bureaux = () => {
                 </select>
               )}
             </div>
+          </div>
+          <div>
+            <label className="field-label">Photo (URL, optionnel)</label>
+            <input type="text" value={formData.image} onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))} className="form-field" placeholder="https://..." />
           </div>
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
             <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>

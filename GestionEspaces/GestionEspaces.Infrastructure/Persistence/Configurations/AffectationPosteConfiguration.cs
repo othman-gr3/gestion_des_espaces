@@ -20,6 +20,9 @@ internal sealed class AffectationPosteConfiguration : IEntityTypeConfiguration<A
         builder.Property(affectation => affectation.Motif)
             .HasMaxLength(100);
 
+        builder.Property(affectation => affectation.Statut)
+            .IsRequired();
+
         builder.HasIndex(affectation => affectation.IdAgent)
             .IsUnique()
             .HasFilter("[DateFin] IS NULL");

@@ -14,8 +14,9 @@ public class AffectationPoste : EntityBase
     public DateTime DateAffectation { get; private set; }
     public DateTime? DateFin { get; private set; }
     public string? Motif { get; private set; }
+    public StatutAffectation Statut { get; private set; } = StatutAffectation.Active;
 
-    public bool EstActive => DateFin is null;
+    public bool EstActive => Statut == StatutAffectation.Active;
 
     private AffectationPoste()
     {
@@ -52,6 +53,7 @@ public class AffectationPoste : EntityBase
         DateFin = dateFin.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(dateFin, DateTimeKind.Utc)
             : dateFin;
+        Statut = StatutAffectation.Terminee;
 
         RaiseDomainEvent(new AffectationPosteClotureeEvent(IdAffectationPoste, IdAgent, IdBureau, DateFin.Value));
     }

@@ -1,3 +1,5 @@
+using GestionEspaces.Domain.Entities;
+
 namespace GestionEspaces.Application.DTOs.Assignments;
 
 /// <summary>
@@ -8,4 +10,6 @@ public sealed record AffectationActifDto(
     int AgentId,
     int ActifId,
     DateTime DateAffectation,
-    DateTime? DateFin);
+    DateTime? DateFin,
+    StatutAffectation Statut,
+    EtatActif? EtatRetour);

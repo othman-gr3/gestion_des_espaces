@@ -17,6 +17,11 @@ internal sealed class AffectationActifConfiguration : IEntityTypeConfiguration<A
 
         builder.Property(affectation => affectation.DateFin);
 
+        builder.Property(affectation => affectation.Statut)
+            .IsRequired();
+
+        builder.Property(affectation => affectation.EtatRetour);
+
         builder.HasIndex(affectation => affectation.IdActif)
             .IsUnique()
             .HasFilter("[DateFin] IS NULL");

@@ -40,7 +40,8 @@ public static class MappingExtensions
         affectation.IdBureau,
         affectation.DateAffectation,
         affectation.DateFin,
-        affectation.Motif);
+        affectation.Motif,
+        affectation.Statut);
 
     public static AssignmentUseCaseResult ToResult(this AffectationActif affectation) => new(
         affectation.IdAffectationActif,
@@ -54,7 +55,9 @@ public static class MappingExtensions
         affectation.IdAgent,
         affectation.IdActif,
         affectation.DateAffectation,
-        affectation.DateFin);
+        affectation.DateFin,
+        affectation.Statut,
+        affectation.EtatRetour);
 
     public static SiteDto ToDto(this Site site) => new(
         site.IdSite,

@@ -1,3 +1,5 @@
+using GestionEspaces.Domain.Entities;
+
 namespace GestionEspaces.Application.DTOs.Assignments;
 
 /// <summary>
@@ -9,4 +11,5 @@ public sealed record AffectationPosteDto(
     int BureauId,
     DateTime DateAffectation,
     DateTime? DateFin,
-    string? Motif);
+    string? Motif,
+    StatutAffectation Statut);
