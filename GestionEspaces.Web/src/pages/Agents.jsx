@@ -5,12 +5,37 @@ import Breadcrumb from '../components/Breadcrumb';
 import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
+import EntityImage from '../components/EntityImage';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (agent, col) => {
   if (col === 'nom') return `${agent.nom} ${agent.prenom}`;
   return agent[col];
 };
+
+// Départements et fonctions réellement utilisés à l'ONEE — l'Administrateur les
+// sélectionne au lieu de les ressaisir à chaque fois (évite les doublons du type
+// "Direction Régionale Casablanca" vs "direction régionale de casablanca").
+const DEPARTEMENTS = [
+  'Centre de Formation', 'Direction Audit et Contrôle de Gestion', 'Direction Clientèle et Marketing',
+  'Direction des Achats et Approvisionnements', "Direction des Systèmes d'Information",
+  'Direction Distribution Électricité', 'Direction Exploitation', 'Direction Exploitation Réseau',
+  'Direction Financière', 'Direction Juridique', 'Direction Production Eau',
+  'Direction Régionale Casablanca', 'Direction Régionale Fès-Meknès', 'Direction Régionale Marrakech-Safi',
+  'Direction Régionale Rabat-Salé-Kénitra', 'Direction Ressources Humaines', 'Direction Technique Eau',
+  'Division Communication',
+];
+
+const FONCTIONS = [
+  'Analyste Financier', 'Assistante de Direction', 'Auditeur Interne', 'Chargée Clientèle',
+  'Chargée Communication', 'Chef de Division Exploitation', 'Chef de Projet Eau', 'Chef de Projet IT',
+  'Comptable', 'Comptable Senior', 'Directeur Régional', 'Directrice Régionale', 'Formatrice',
+  'Ingénieur Réseau', "Ingénieur Systèmes d'Information", 'Ingénieure Production Eau', 'Juriste',
+  'Responsable Achats', 'Responsable Clientèle', 'Responsable Ressources Humaines', 'Responsable RH',
+  'Technicien Distribution', 'Technicien Maintenance', 'Technicien Réseau Eau',
+];
+
+const AUTRE = '__autre__';
 
 const Agents = () => {
   const { hasRole } = useAuth();
@@ -28,6 +53,8 @@ const Agents = () => {
   const [currentAgent, setCurrentAgent] = useState(null);
   const [formData, setFormData] = useState({ nom: '', prenom: '', matricule: '', email: '', telephone: '', fonction: '', departement: '', dateEmbauche: '', image: '' });
   const [formError, setFormError] = useState('');
+  const [departementIsCustom, setDepartementIsCustom] = useState(false);
+  const [fonctionIsCustom, setFonctionIsCustom] = useState(false);
 
   const { sortedRows, sortKey, sortDir, onSort } = useSort(agents, getSortValue, 'nom');
 
@@ -51,9 +78,13 @@ const Agents = () => {
     if (agent) {
       setCurrentAgent(agent);
       setFormData({ nom: agent.nom, prenom: agent.prenom, matricule: agent.matricule, email: agent.email || '', telephone: agent.telephone || '', fonction: agent.fonction || '', departement: agent.departement || '', dateEmbauche: agent.dateEmbauche ? agent.dateEmbauche.split('T')[0] : '', image: agent.image || '' });
+      setDepartementIsCustom(!!agent.departement && !DEPARTEMENTS.includes(agent.departement));
+      setFonctionIsCustom(!!agent.fonction && !FONCTIONS.includes(agent.fonction));
     } else {
       setCurrentAgent(null);
       setFormData({ nom: '', prenom: '', matricule: '', email: '', telephone: '', fonction: '', departement: '', dateEmbauche: '', image: '' });
+      setDepartementIsCustom(false);
+      setFonctionIsCustom(false);
     }
     setIsDrawerOpen(true);
   };
@@ -133,8 +164,13 @@ const Agents = () => {
                 <tr key={agent.idAgent} className="hover:bg-neutral-bg/60 transition-colors">
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{agent.matricule}</td>
                   <td className="whitespace-nowrap px-4 py-2.5">
-                    <div className="text-[13px] font-semibold text-text-primary">{agent.nom.toUpperCase()} {agent.prenom}</div>
-                    {agent.fonction && <div className="text-[11.5px] text-text-secondary mt-0.5">{agent.fonction}</div>}
+                    <div className="flex items-center gap-3">
+                      <EntityImage src={agent.image} alt={`${agent.prenom} ${agent.nom}`} />
+                      <div>
+                        <div className="text-[13px] font-semibold text-text-primary">{agent.nom.toUpperCase()} {agent.prenom}</div>
+                        {agent.fonction && <div className="text-[11.5px] text-text-secondary mt-0.5">{agent.fonction}</div>}
+                      </div>
+                    </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-2.5">
                     <div className="text-[12.5px] text-text-secondary">{agent.email || '—'}</div>
@@ -183,7 +219,22 @@ const Agents = () => {
             </div>
             <div>
               <label className="field-label">Département</label>
-              <input type="text" value={formData.departement} onChange={(e) => setFormData((p) => ({ ...p, departement: e.target.value }))} className="form-field" />
+              {departementIsCustom ? (
+                <input type="text" value={formData.departement} onChange={(e) => setFormData((p) => ({ ...p, departement: e.target.value }))} className="form-field" placeholder="Saisir le département" autoFocus />
+              ) : (
+                <select
+                  value={formData.departement}
+                  onChange={(e) => {
+                    if (e.target.value === AUTRE) { setDepartementIsCustom(true); setFormData((p) => ({ ...p, departement: '' })); }
+                    else { setFormData((p) => ({ ...p, departement: e.target.value })); }
+                  }}
+                  className="form-field"
+                >
+                  <option value="">Sélectionner...</option>
+                  {DEPARTEMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                  <option value={AUTRE}>Autre (saisir manuellement)...</option>
+                </select>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-5">
@@ -199,12 +250,31 @@ const Agents = () => {
           <div className="grid grid-cols-2 gap-5">
             <div>
               <label className="field-label">Fonction</label>
-              <input type="text" value={formData.fonction} onChange={(e) => setFormData((p) => ({ ...p, fonction: e.target.value }))} className="form-field" />
+              {fonctionIsCustom ? (
+                <input type="text" value={formData.fonction} onChange={(e) => setFormData((p) => ({ ...p, fonction: e.target.value }))} className="form-field" placeholder="Saisir la fonction" autoFocus />
+              ) : (
+                <select
+                  value={formData.fonction}
+                  onChange={(e) => {
+                    if (e.target.value === AUTRE) { setFonctionIsCustom(true); setFormData((p) => ({ ...p, fonction: '' })); }
+                    else { setFormData((p) => ({ ...p, fonction: e.target.value })); }
+                  }}
+                  className="form-field"
+                >
+                  <option value="">Sélectionner...</option>
+                  {FONCTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+                  <option value={AUTRE}>Autre (saisir manuellement)...</option>
+                </select>
+              )}
             </div>
             <div>
               <label className="field-label">Date d'embauche</label>
               <input type="date" value={formData.dateEmbauche} onChange={(e) => setFormData((p) => ({ ...p, dateEmbauche: e.target.value }))} className="form-field" />
             </div>
+          </div>
+          <div>
+            <label className="field-label">Photo (URL, optionnel)</label>
+            <input type="text" value={formData.image} onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))} className="form-field" placeholder="https://..." />
           </div>
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
             <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>

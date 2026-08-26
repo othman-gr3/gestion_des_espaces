@@ -24,7 +24,7 @@ public static class DbInitializer
             new AdresseSite("65, Rue Othman Ben Affane", "Casablanca", "20000", "Maroc"),
             "0522123456",
             "contact.siege@onee.ma",
-            "site_siege.jpg"
+            "https://picsum.photos/seed/onee-siege-casablanca/400/300"
         );
 
         var site2 = new Site(
@@ -33,7 +33,7 @@ public static class DbInitializer
             new AdresseSite("Bd Ahl Loughlam, BP 2590, Ain Sebaa", "Casablanca", "20250", "Maroc"),
             "0522987654",
             "dr.casa@onee.ma",
-            "site_dr_casa.jpg"
+            "https://picsum.photos/seed/onee-dr-casablanca/400/300"
         );
 
         var site3 = new Site(
@@ -42,7 +42,7 @@ public static class DbInitializer
             new AdresseSite("Avenue Al Abtal, Agdal", "Rabat", "10080", "Maroc"),
             "0537701122",
             "dr.rabat@onee.ma",
-            "site_dr_rabat.jpg"
+            "https://picsum.photos/seed/onee-dr-rabat/400/300"
         );
 
         var site4 = new Site(
@@ -51,7 +51,7 @@ public static class DbInitializer
             new AdresseSite("Route de Casablanca, Sidi Ghanem", "Marrakech", "40000", "Maroc"),
             "0524334455",
             "dr.marrakech@onee.ma",
-            "site_dr_marrakech.jpg"
+            "https://picsum.photos/seed/onee-dr-marrakech/400/300"
         );
 
         var site5 = new Site(
@@ -60,7 +60,7 @@ public static class DbInitializer
             new AdresseSite("Route d'Immouzer, Route de Sefrou", "Fès", "30000", "Maroc"),
             "0535660077",
             "dr.fes@onee.ma",
-            "site_dr_fes.jpg"
+            "https://picsum.photos/seed/onee-dr-fes/400/300"
         );
 
         var site6 = new Site(
@@ -69,7 +69,7 @@ public static class DbInitializer
             new AdresseSite("Station de traitement, Route de Zaers", "Rabat", "10090", "Maroc"),
             "0537778899",
             "contact.eau@onee.ma",
-            "site_siege_eau.jpg"
+            "https://picsum.photos/seed/onee-siege-eau/400/300"
         );
 
         await context.Sites.AddRangeAsync(site1, site2, site3, site4, site5, site6);
@@ -157,7 +157,7 @@ public static class DbInitializer
         // 4. AGENTS
         // agent1's email matches the "Agent" test login account in appsettings.json (Users section),
         // so the self-service /api/agents/me/office and /me/assets endpoints resolve to this record.
-        var agent1 = new Agent("El Amrani", "Youssef", "ONE-4521", "y.elamrani@onee.ma", "0661234501", "Directeur Régional", "Direction Régionale Casablanca", new DateTime(2010, 3, 15), "agent1.jpg");
+        var agent1 = new Agent("El Amrani", "Youssef", "ONE-4521", "y.elamrani@onee.ma", "0661234501", "Directeur Régional", "Direction Régionale Casablanca", new DateTime(2010, 3, 15), "https://ui-avatars.com/api/?name=Youssef+El+Amrani&background=1B4F8C&color=fff&size=128&bold=true");
         var agent2 = new Agent("Benjelloun", "Salma", "ONE-4877", "s.benjelloun@onee.ma", "0661234502", "Responsable Ressources Humaines", "Direction Ressources Humaines", new DateTime(2013, 9, 1), "agent2.jpg");
         var agent3 = new Agent("Tazi", "Karim", "ONE-5102", "k.tazi@onee.ma", "0661234503", "Ingénieur Réseau", "Direction Exploitation", new DateTime(2016, 1, 20), "agent3.jpg");
         var agent4 = new Agent("Fassi", "Amina", "ONE-5390", "a.fassi@onee.ma", "0661234504", "Comptable Senior", "Direction Financière", new DateTime(2017, 6, 10), "agent4.jpg");

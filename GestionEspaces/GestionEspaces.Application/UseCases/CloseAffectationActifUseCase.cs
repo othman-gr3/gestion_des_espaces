@@ -37,9 +37,12 @@ public sealed class CloseAffectationActifUseCase
 
         try
         {
-            agent.CloreAffectationActif(idAffectationActif, request.DateFin);
+            agent.CloreAffectationActif(idAffectationActif, request.DateFin, request.EtatRetour);
             var affectation = agent.AffectationsActif.Single(a => a.IdAffectationActif == idAffectationActif);
 
+            // EtatRetour is now persisted on the affectation itself (the historical record of
+            // this specific handover) — this also updates the actif's current Etat, a separate
+            // concern (what condition it's actually in right now, for future assignments).
             if (request.EtatRetour.HasValue)
             {
                 var actif = await _actifRepository.GetByIdAsync(affectation.IdActif, cancellationToken);

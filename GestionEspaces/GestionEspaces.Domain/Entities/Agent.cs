@@ -130,12 +130,12 @@ public class Agent : EntityBase
         affectation.Clore(dateFin);
     }
 
-    public void CloreAffectationActif(int idAffectationActif, DateTime dateFin)
+    public void CloreAffectationActif(int idAffectationActif, DateTime dateFin, EtatActif? etatRetour = null)
     {
         var affectation = _affectationsActif.SingleOrDefault(item => item.IdAffectationActif == idAffectationActif)
             ?? throw new BusinessRuleViolationException("Aucune affectation d'actif correspondante n'a été trouvée.");
 
-        affectation.Clore(dateFin);
+        affectation.Clore(dateFin, etatRetour);
     }
 
     internal void AjouterAffectationPoste(AffectationPoste affectation)

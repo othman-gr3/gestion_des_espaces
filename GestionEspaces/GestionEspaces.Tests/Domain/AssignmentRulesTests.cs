@@ -64,6 +64,24 @@ public class AssignmentRulesTests
         Assert.False(affectation.EstActive);
         Assert.True(secondAffectation.EstActive);
         Assert.Equal(2, agent.AffectationsPoste.Count);
+        Assert.Equal(StatutAffectation.Terminee, affectation.Statut);
+        Assert.Equal(StatutAffectation.Active, secondAffectation.Statut);
+    }
+
+    [Fact]
+    public void ClosingAnAssetAssignment_PersistsEtatRetourOnTheAssignmentItself()
+    {
+        var agent = CreateAgent();
+        var actif = CreateActif();
+
+        var affectation = actif.AffecterA(agent, new DateTime(2026, 1, 10, 8, 0, 0, DateTimeKind.Utc));
+        affectation.Clore(new DateTime(2026, 2, 1, 8, 0, 0, DateTimeKind.Utc), EtatActif.ARepairer);
+
+        Assert.Equal(StatutAffectation.Terminee, affectation.Statut);
+        Assert.Equal(EtatActif.ARepairer, affectation.EtatRetour);
+        // The asset's own current Etat is a separate concern, updated independently by the
+        // use case — closing an assignment alone does not change Actif.Etat.
+        Assert.Equal(EtatActif.Neuf, actif.Etat);
     }
 
     private static Agent CreateAgent() => new(

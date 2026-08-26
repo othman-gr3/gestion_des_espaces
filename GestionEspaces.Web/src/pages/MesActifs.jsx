@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Breadcrumb from '../components/Breadcrumb';
 import StatusBadge from '../components/StatusBadge';
+import EntityImage from '../components/EntityImage';
 
 const EtatConfig = {
   0: { label: 'Neuf', tone: 'success' },
@@ -62,7 +63,12 @@ const MesActifs = () => {
                 const et = EtatConfig[a.etat] || { label: 'Inconnu', tone: 'neutral' };
                 return (
                   <tr key={a.idActif} className="hover:bg-neutral-bg/60 transition-colors">
-                    <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-semibold text-text-primary">{a.nom}</td>
+                    <td className="whitespace-nowrap px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <EntityImage src={a.image} alt={a.nom} size={32} rounded="rounded" />
+                        <span className="text-[13px] font-semibold text-text-primary">{a.nom}</span>
+                      </div>
+                    </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{a.type}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{[a.marque, a.modele].filter(Boolean).join(' · ') || '—'}</td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{a.numeroSerie || '—'}</td>

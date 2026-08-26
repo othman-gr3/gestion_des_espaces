@@ -6,6 +6,7 @@ import Breadcrumb from '../components/Breadcrumb';
 import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
+import EntityImage from '../components/EntityImage';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (batiment, col) => batiment[col];
@@ -150,7 +151,12 @@ const Batiments = () => {
             ) : (
               sortedRows.map((b) => (
                 <tr key={b.idBatiment} className="hover:bg-neutral-bg/60 transition-colors">
-                  <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-semibold text-text-primary">{b.nom}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <EntityImage src={b.image} alt={b.nom} size={32} rounded="rounded" />
+                      <span className="text-[13px] font-semibold text-text-primary">{b.nom}</span>
+                    </div>
+                  </td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary">{siteName(b.idSite)}</td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-primary">{b.nombreEtages}</td>
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] text-text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{b.superficie} m²</td>

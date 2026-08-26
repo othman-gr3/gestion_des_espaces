@@ -13,8 +13,10 @@ public class AffectationActif : EntityBase
     public Actif Actif { get; private set; } = null!;
     public DateTime DateAffectation { get; private set; }
     public DateTime? DateFin { get; private set; }
+    public StatutAffectation Statut { get; private set; } = StatutAffectation.Active;
+    public EtatActif? EtatRetour { get; private set; }
 
-    public bool EstActive => DateFin is null;
+    public bool EstActive => Statut == StatutAffectation.Active;
 
     private AffectationActif()
     {
@@ -35,7 +37,13 @@ public class AffectationActif : EntityBase
         IdActif = actif.IdActif;
     }
 
-    public void Clore(DateTime dateFin)
+    /// <summary>
+    /// Closes the assignment. <paramref name="etatRetour"/> records the condition the
+    /// asset was returned in for THIS specific handover — kept here (not just applied to
+    /// <see cref="Actif.Etat"/>) so that history survives even after the asset's current
+    /// state changes again on a later assignment.
+    /// </summary>
+    public void Clore(DateTime dateFin, EtatActif? etatRetour = null)
     {
         if (!EstActive)
         {
@@ -50,6 +58,8 @@ public class AffectationActif : EntityBase
         DateFin = dateFin.Kind == DateTimeKind.Unspecified
             ? DateTime.SpecifyKind(dateFin, DateTimeKind.Utc)
             : dateFin;
+        Statut = StatutAffectation.Terminee;
+        EtatRetour = etatRetour;
 
         RaiseDomainEvent(new AffectationActifClotureeEvent(IdAffectationActif, IdAgent, IdActif, DateFin.Value));
     }

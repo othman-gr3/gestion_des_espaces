@@ -5,6 +5,7 @@ import Breadcrumb from '../components/Breadcrumb';
 import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
+import EntityImage from '../components/EntityImage';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (site, col) => {
@@ -142,7 +143,12 @@ const Sites = () => {
               sortedRows.map((site) => (
                 <tr key={site.idSite} className="hover:bg-neutral-bg/60 transition-colors">
                   <td className="whitespace-nowrap px-4 py-2.5 text-[12.5px] font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>{site.code}</td>
-                  <td className="whitespace-nowrap px-4 py-2.5 text-[13px] font-medium text-text-primary">{site.nom}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <EntityImage src={site.image} alt={site.nom} size={32} rounded="rounded" />
+                      <span className="text-[13px] font-medium text-text-primary">{site.nom}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-2.5 text-[12.5px] text-text-secondary">{site.rue}, {site.codePostal} {site.ville}, {site.pays}</td>
                   <td className="px-4 py-2.5 text-[12.5px] text-text-secondary">
                     {site.telephone && <div>{site.telephone}</div>}

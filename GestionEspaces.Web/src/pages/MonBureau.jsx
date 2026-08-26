@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Breadcrumb from '../components/Breadcrumb';
 import StatusBadge from '../components/StatusBadge';
+import EntityImage from '../components/EntityImage';
 
 const StatutConfig = {
   0: { label: 'Disponible', tone: 'success' },
@@ -57,10 +58,13 @@ const MonBureau = () => {
       ) : (
         <div className="struct-card p-6">
           <div className="flex items-start justify-between mb-5">
-            <div>
-              <div className="th-label mb-1">Bureau</div>
-              <div className="text-2xl font-extrabold text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 800 }}>
-                N° {bureau.numero}
+            <div className="flex items-center gap-4">
+              <EntityImage src={bureau.image} alt={`Bureau ${bureau.numero}`} size={56} rounded="rounded-lg" />
+              <div>
+                <div className="th-label mb-1">Bureau</div>
+                <div className="text-2xl font-extrabold text-primary" style={{ fontFamily: 'var(--font-display)', fontWeight: 800 }}>
+                  N° {bureau.numero}
+                </div>
               </div>
             </div>
             <StatusBadge tone={(StatutConfig[bureau.statut] || {}).tone || 'neutral'}>
