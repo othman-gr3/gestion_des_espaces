@@ -6,6 +6,7 @@ import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
 import EntityImage from '../components/EntityImage';
+import ImageUploadField from '../components/ImageUploadField';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (agent, col) => {
@@ -272,10 +273,11 @@ const Agents = () => {
               <input type="date" value={formData.dateEmbauche} onChange={(e) => setFormData((p) => ({ ...p, dateEmbauche: e.target.value }))} className="form-field" />
             </div>
           </div>
-          <div>
-            <label className="field-label">Photo (URL, optionnel)</label>
-            <input type="text" value={formData.image} onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))} className="form-field" placeholder="https://..." />
-          </div>
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData((p) => ({ ...p, image: url }))}
+            alt={`${formData.prenom} ${formData.nom}`}
+          />
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
             <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
             <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>

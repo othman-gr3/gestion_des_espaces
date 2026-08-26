@@ -11,6 +11,11 @@ public static class DbInitializer
         // Apply migrations automatically just in case
         await context.Database.MigrateAsync();
 
+        // Login accounts are seeded independently of the referentiel data below — an
+        // existing database that predates the AppUsers table still needs these rows
+        // even though context.Sites.Any() is already true by then.
+        await SeedUsersAsync(context);
+
         // Only seed an empty database — never wipe existing data
         if (context.Sites.Any())
             return;
@@ -296,6 +301,22 @@ public static class DbInitializer
         agent28.AffecterActif(act26, new DateTime(2022, 5, 21));
         agent21.AffecterActif(act27, new DateTime(2021, 5, 29));
         agent22.AffecterActif(act28, new DateTime(2021, 3, 17));
+
+        await context.SaveChangesAsync();
+    }
+
+    // Same three accounts and PBKDF2 hashes previously hardcoded in appsettings.json's
+    // Users section — moved here so a user can change their own password afterwards
+    // (a database row can be updated at runtime; a committed JSON file can't).
+    private static async Task SeedUsersAsync(GestionEspacesDbContext context)
+    {
+        if (context.AppUsers.Any())
+            return;
+
+        context.AppUsers.AddRange(
+            new AppUser("admin@onee.ma", "7sbdF4/o2CfBninfsbuExs3Rj0AYwR7h2/STBfNZPXM2S8vzNCyV6UdGNtTuWlFf", "Administrateur", "Admin ONEE"),
+            new AppUser("gestionnaire@onee.ma", "t1mJ2YJ+nekleKfb+d2+qs9WzjIA3DfP4u86NVzcdhVNXkInhq0PsWL4ZlGGbcPX", "Gestionnaire", "Gestionnaire ONEE"),
+            new AppUser("y.elamrani@onee.ma", "f6ZKvfHWk5mw/TfA4I+GBCrpJacUJUuJ2ZrBJvSLtB40SyZZfPS+SOeTPLydm1V1", "Agent", "Youssef El Amrani"));
 
         await context.SaveChangesAsync();
     }

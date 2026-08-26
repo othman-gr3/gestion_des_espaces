@@ -49,6 +49,8 @@ public sealed class GestionEspacesDbContext : DbContext
 
     public DbSet<DemandeAgent> Demandes => Set<DemandeAgent>();
 
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GestionEspacesDbContext).Assembly);
