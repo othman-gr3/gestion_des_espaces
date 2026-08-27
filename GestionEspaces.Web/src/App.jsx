@@ -20,10 +20,12 @@ import MonBureau from './pages/MonBureau';
 import MesActifs from './pages/MesActifs';
 import MonHistorique from './pages/MonHistorique';
 import MonProfil from './pages/MonProfil';
+import MonCompte from './pages/MonCompte';
 import MesDemandes from './pages/MesDemandes';
 import Demandes from './pages/Demandes';
 import JournalAudit from './pages/JournalAudit';
 import RechercheIA from './pages/RechercheIA';
+import Utilisateurs from './pages/Utilisateurs';
 
 // Landing page at "/" — each role has a different home, since only
 // Administrateur can read the referentiel endpoints the Dashboard calls.
@@ -58,6 +60,7 @@ function App() {
             <Route path="agents" element={<ProtectedRoute requiredRole="Administrateur"><Agents /></ProtectedRoute>} />
             <Route path="actifs" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Assets /></ProtectedRoute>} />
             <Route path="journal-audit" element={<ProtectedRoute requiredRole="Administrateur"><JournalAudit /></ProtectedRoute>} />
+            <Route path="utilisateurs" element={<ProtectedRoute requiredRole="Administrateur"><Utilisateurs /></ProtectedRoute>} />
 
             {/* Administrateur + Gestionnaire — affectations (matches the backend's GestionAffectations/ReferentielLecture policies) */}
             <Route path="rechercher-bureau" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><RechercheBureaux /></ProtectedRoute>} />
@@ -66,6 +69,9 @@ function App() {
             <Route path="historique-affectations" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><HistoriqueAffectations /></ProtectedRoute>} />
             <Route path="recherche-ia" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><RechercheIA /></ProtectedRoute>} />
             <Route path="demandes" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><Demandes /></ProtectedRoute>} />
+
+            {/* Administrateur + Gestionnaire — self-service account (Agent has its own richer "Mon profil" below) */}
+            <Route path="mon-compte" element={<ProtectedRoute requiredRole={['Administrateur', 'Gestionnaire']}><MonCompte /></ProtectedRoute>} />
 
             {/* Agent — mon espace */}
             <Route path="mon-bureau" element={<ProtectedRoute requiredRole="Agent"><MonBureau /></ProtectedRoute>} />

@@ -1,4 +1,6 @@
 using GestionEspaces.Infrastructure.Persistence;
+using GestionEspaces.Infrastructure.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -31,12 +33,10 @@ public sealed class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             return BadRequest(new { detail = "L'adresse email et le mot de passe sont obligatoires." });
 
-        // Look up user in configuration
-        var users = _configuration.GetSection("Users").Get<UserConfig[]>() ?? [];
-        var user = users.FirstOrDefault(u =>
-            string.Equals(u.Email, request.Email, StringComparison.OrdinalIgnoreCase));
+        var user = await _dbContext.AppUsers
+            .SingleOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower(), cancellationToken);
 
-        if (user is null || !VerifyPassword(request.Password, user.PasswordHash))
+        if (user is null || !PasswordHasher.Verify(request.Password, user.PasswordHash))
             return Unauthorized(new { detail = "Email ou mot de passe incorrect." });
 
         var accessToken = CreateAccessToken(user.Email, user.Name, user.Role);
@@ -50,6 +50,78 @@ public sealed class AuthController : ControllerBase
             role = user.Role,
             name = user.Name
         });
+    }
+
+    // Self-service password change — the only mutation a logged-in user can make to their
+    // own account. Requires the current password (not just a valid access token) so a
+    // stolen/leftover session on a shared machine can't lock the real owner out.
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+            return BadRequest(new { detail = "Le mot de passe actuel et le nouveau mot de passe sont obligatoires." });
+
+        if (request.NewPassword.Length < 8)
+            return BadRequest(new { detail = "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized();
+
+        var user = await _dbContext.AppUsers
+            .SingleOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
+
+        if (user is null || !PasswordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+            return BadRequest(new { detail = "Le mot de passe actuel est incorrect." });
+
+        user.ChangePassword(PasswordHasher.Hash(request.NewPassword));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return NoContent();
+    }
+
+    // Current account's own data, including fields the login response doesn't carry
+    // (e.g. Image) — the frontend calls this on the account page instead of relying on
+    // whatever was cached in localStorage at login time.
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetMeAsync(CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized();
+
+        var user = await _dbContext.AppUsers
+            .SingleOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
+
+        if (user is null)
+            return Unauthorized();
+
+        return Ok(new { user.Email, user.Name, user.Role, user.Image });
+    }
+
+    // Self-service photo update — same Image field already used on Agents/Sites/Bâtiments/
+    // Bureaux/Actifs, just scoped to the caller's own account instead of an admin editing
+    // someone else's record.
+    [HttpPut("me/image")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMyImageAsync([FromBody] UpdateImageRequest request, CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized();
+
+        var user = await _dbContext.AppUsers
+            .SingleOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
+
+        if (user is null)
+            return Unauthorized();
+
+        user.UpdateImage(string.IsNullOrWhiteSpace(request.Image) ? null : request.Image);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Ok(new { user.Email, user.Name, user.Role, user.Image });
     }
 
     // Trades a still-active refresh token for a new access token, rotating the refresh
@@ -69,9 +141,8 @@ public sealed class AuthController : ControllerBase
         if (stored is null || !stored.IsActive)
             return Unauthorized(new { detail = "Jeton de rafraîchissement invalide ou expiré." });
 
-        var users = _configuration.GetSection("Users").Get<UserConfig[]>() ?? [];
-        var user = users.FirstOrDefault(u =>
-            string.Equals(u.Email, stored.UserEmail, StringComparison.OrdinalIgnoreCase));
+        var user = await _dbContext.AppUsers
+            .SingleOrDefaultAsync(u => u.Email.ToLower() == stored.UserEmail.ToLower(), cancellationToken);
 
         if (user is null)
             return Unauthorized(new { detail = "Utilisateur introuvable." });
@@ -160,26 +231,9 @@ public sealed class AuthController : ControllerBase
     private static string HashToken(string rawToken) =>
         Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(rawToken)));
 
-    // PBKDF2-SHA256 with 16-byte salt, 10 000 iterations, 32-byte hash
-    // Format stored in config: Base64( salt[16] || hash[32] )
-    private static bool VerifyPassword(string password, string storedHash)
-    {
-        try
-        {
-            var hashBytes = Convert.FromBase64String(storedHash);
-            if (hashBytes.Length != 48) return false;
-            var salt = hashBytes[..16];
-            var expected = hashBytes[16..];
-            var actual = Rfc2898DeriveBytes.Pbkdf2(password, salt, 10000, HashAlgorithmName.SHA256, 32);
-            return CryptographicOperations.FixedTimeEquals(actual, expected);
-        }
-        catch
-        {
-            return false;
-        }
-    }
 }
 
 public sealed record LoginRequest(string Email, string Password);
 public sealed record RefreshRequest(string RefreshToken);
-public sealed record UserConfig(string Email, string PasswordHash, string Role, string Name);
+public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public sealed record UpdateImageRequest(string? Image);

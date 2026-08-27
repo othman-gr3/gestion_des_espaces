@@ -6,6 +6,7 @@ import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
 import EntityImage from '../components/EntityImage';
+import ImageUploadField from '../components/ImageUploadField';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (site, col) => {
@@ -204,16 +205,15 @@ const Sites = () => {
               <input type="text" name="codePostal" value={formData.codePostal} onChange={handleInputChange} className="form-field" required />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label className="field-label">Pays</label>
-              <input type="text" name="pays" value={formData.pays} onChange={handleInputChange} className="form-field" required />
-            </div>
-            <div>
-              <label className="field-label">Image URL (optionnel)</label>
-              <input type="text" name="image" value={formData.image} onChange={handleInputChange} className="form-field" />
-            </div>
+          <div>
+            <label className="field-label">Pays</label>
+            <input type="text" name="pays" value={formData.pays} onChange={handleInputChange} className="form-field" required />
           </div>
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData((p) => ({ ...p, image: url }))}
+            alt={formData.nom}
+          />
           <div className="grid grid-cols-2 gap-5">
             <div>
               <label className="field-label">Téléphone (optionnel)</label>

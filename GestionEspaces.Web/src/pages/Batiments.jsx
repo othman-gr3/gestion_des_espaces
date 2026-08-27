@@ -7,6 +7,7 @@ import Drawer from '../components/Drawer';
 import Pagination from '../components/Pagination';
 import SortableTh from '../components/SortableTh';
 import EntityImage from '../components/EntityImage';
+import ImageUploadField from '../components/ImageUploadField';
 import useSort from '../hooks/useSort';
 
 const getSortValue = (batiment, col) => batiment[col];
@@ -209,10 +210,11 @@ const Batiments = () => {
               <input type="number" value={formData.superficie} onChange={(e) => setFormData((p) => ({ ...p, superficie: e.target.value }))} className="form-field" min="1" step="0.1" required />
             </div>
           </div>
-          <div>
-            <label className="field-label">Image URL (optionnel)</label>
-            <input type="text" value={formData.image} onChange={(e) => setFormData((p) => ({ ...p, image: e.target.value }))} className="form-field" />
-          </div>
+          <ImageUploadField
+            value={formData.image}
+            onChange={(url) => setFormData((p) => ({ ...p, image: url }))}
+            alt={formData.nom}
+          />
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-border-subtle">
             <button type="button" onClick={() => setIsDrawerOpen(false)} className="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">Annuler</button>
             <button type="submit" className="bg-primary px-6 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>Enregistrer</button>

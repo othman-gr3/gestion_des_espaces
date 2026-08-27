@@ -21,3 +21,6 @@ build/
 appsettings.Development.json
 .env
 *.env.local
+
+# User-uploaded images (local dev storage only)
+**/wwwroot/uploads/

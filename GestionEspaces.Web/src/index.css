@@ -174,4 +174,26 @@
     letter-spacing: 0.1em;
     color: var(--color-text-secondary);
   }
+
+  /* Slim sidebar scrollbar — a graceful fallback on short viewports instead of
+     the native OS scrollbar's chunky up/down arrow buttons. */
+  .sidebar-nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+  }
+  .sidebar-nav::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
 }

@@ -40,6 +40,7 @@ const NAV_GROUPS = {
         label: 'Sécurité',
         items: [
           { name: "Journal d'audit", path: '/journal-audit' },
+          { name: 'Utilisateurs', path: '/utilisateurs' },
         ],
       },
     ],
@@ -74,6 +75,8 @@ const AppShell = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const accountPath = user?.role === 'Agent' ? '/mon-profil' : '/mon-compte';
+
   const roleNav = NAV_GROUPS[user?.role] || { groups: [] };
   const allItems = [
     ...(roleNav.pinned ? [roleNav.pinned] : []),
@@ -98,20 +101,20 @@ const AppShell = () => {
             : 'text-white/75 hover:text-white hover:bg-white/8 border-l-[3px] border-transparent'
         }`}
       >
-        <span className="px-5 py-2.5 block w-full">{item.name}</span>
+        <span className="px-5 py-[4px] block w-full">{item.name}</span>
       </Link>
     );
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-neutral-bg">
+    <div className="flex h-dvh w-full overflow-hidden bg-neutral-bg">
       {/* Sidebar */}
       <aside
         className="flex w-64 flex-col bg-primary text-white border-t-4 border-accent flex-shrink-0"
         style={{ fontFamily: 'var(--font-display)' }}
       >
         {/* Brand */}
-        <div className="px-6 pt-5 pb-4 border-b border-white/10">
+        <div className="px-6 pt-4 pb-3 border-b border-white/10">
           <div
             className="text-[10.5px] text-accent/80 tracking-[0.2em] uppercase mb-1"
             style={{ fontFamily: 'var(--font-mono)' }}
@@ -124,12 +127,12 @@ const AppShell = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-3 overflow-y-auto">
-          {roleNav.pinned && <div className="mb-2">{renderLink(roleNav.pinned)}</div>}
+        <nav className="sidebar-nav flex-1 min-h-0 py-2 overflow-y-auto">
+          {roleNav.pinned && <div className="mb-1">{renderLink(roleNav.pinned)}</div>}
           {roleNav.groups.map((g) => (
             <div key={g.label}>
               <div
-                className="px-5 pt-2 pb-1.5 text-[10px] text-white/40 tracking-[0.15em] uppercase"
+                className="px-5 pt-1.5 pb-1 text-[10px] text-white/40 tracking-[0.15em] uppercase"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 {g.label}
@@ -140,7 +143,7 @@ const AppShell = () => {
         </nav>
 
         {/* User footer */}
-        <div className="px-5 py-4 border-t border-white/10 bg-black/10">
+        <div className="flex-shrink-0 px-5 py-3 border-t border-white/10 bg-black/10">
           <div
             className="text-[9.5px] text-white/50 tracking-[0.15em] uppercase mb-1"
             style={{ fontFamily: 'var(--font-mono)' }}
@@ -156,9 +159,16 @@ const AppShell = () => {
           >
             {user?.role}
           </div>
+          <Link
+            to={accountPath}
+            className="mt-2 block text-[11.5px] text-white/55 hover:text-white transition-colors"
+            style={{ fontFamily: 'var(--font-sans)' }}
+          >
+            Mon compte
+          </Link>
           <button
             onClick={handleLogout}
-            className="mt-3 text-[11.5px] text-white/55 hover:text-white transition-colors"
+            className="mt-1 text-[11.5px] text-white/55 hover:text-white transition-colors"
             style={{ fontFamily: 'var(--font-sans)' }}
           >
             Se déconnecter →

@@ -11,6 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
 
+// wwwroot/uploads must exist before WebApplication.CreateBuilder runs — the builder
+// snapshots WebRootFileProvider at that point, so creating the folder any later leaves
+// static file serving pointed at a NullFileProvider for the rest of the process lifetime.
+Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads"));
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ── JWT Authentication ──────────────────────────────────────────────────────
@@ -159,6 +164,9 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Serves uploaded images back out from wwwroot/uploads (see UploadsController).
+app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
 {
