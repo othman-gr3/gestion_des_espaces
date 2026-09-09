@@ -4,7 +4,7 @@
 >
 > **Backend** : ASP.NET Core 10 (Clean Architecture) · **Frontend** : React 19 + Vite + Tailwind CSS v4 · **Base de données** : SQL Server
 
-> **Branche `school-ai`** : cette branche contient tout ce qui est sur `main` (version remise en stage) **plus** une fonctionnalité de recherche de bureau assistée par IA (section [Intelligence artificielle](#intelligence-artificielle)), ajoutée pour le projet de fin d'études. `main` reste la version stage, sans dépendance à un service IA externe.
+> **Branche `school-ai`** : cette branche contient tout ce qui est sur `main` (version remise en stage) **plus** un ensemble de fonctionnalités d'intelligence artificielle (recherche en langage naturel, assistant self-service pour l'Agent, détection d'anomalies — section [Intelligence artificielle](#intelligence-artificielle)), ajoutées pour le projet de fin d'études. `main` reste la version stage, sans dépendance à un service IA externe.
 
 ---
 
@@ -74,11 +74,31 @@ Au-delà du RBAC, plusieurs mécanismes protègent l'application :
 
 ### Intelligence artificielle
 
-*Spécifique à la branche `school-ai`.* La page **Recherche IA** (Administrateur, Gestionnaire) permet de décrire en français libre le bureau recherché — *"un bureau individuel disponible avec au moins 3 places au Siège ONEE"* — au lieu de manipuler des filtres. La requête est envoyée à un LLM via [OpenRouter](https://openrouter.ai/) (`POST /api/bureaux/ai-search`), qui la traduit en critères structurés (bâtiment, statut, type, capacité/étage minimum) à partir de la liste réelle des bâtiments et sites ; ces critères sont ensuite exécutés contre le référentiel `Bureau` existant.
+*Spécifique à la branche `school-ai`.* Quatre fonctionnalités, toutes construites sur le même principe : **ne jamais échouer franchement** — si le LLM n'est pas disponible, chaque fonctionnalité bascule sur un chemin de repli qui reste réellement utile, plutôt que de renvoyer une erreur.
 
-**Dégradation gracieuse** — pensée dès la conception, pas ajoutée après coup : si la clé API n'est pas configurée, si OpenRouter est injoignable, ou si le modèle répond quelque chose d'inexploitable, la recherche **n'échoue pas** — elle bascule automatiquement sur une recherche par mot-clé classique sur le numéro de bureau, et l'interface l'indique clairement (badge *"IA activée"* vs *"Repli mot-clé"*). C'est ce chemin de repli qui est exercé par les tests automatisés (voir ci-dessous), puisqu'aucune clé réelle n'est configurée dans l'environnement de test.
+#### Recherche IA (généralisée)
 
-**Configuration** — pour activer réellement l'appel au LLM (sinon la fonctionnalité tourne en mode repli, sans erreur) :
+La page **Recherche IA** (Administrateur, Gestionnaire) permet de décrire en français libre ce qu'on cherche — *"un bureau individuel disponible avec au moins 3 places au Siège ONEE"*, *"les agents du département informatique"*, *"les ordinateurs portables à réparer"* — au lieu de manipuler des filtres. Trois onglets, un par entité :
+
+| Onglet | Endpoint | Critères extraits par le LLM |
+|---|---|---|
+| Bureaux | `POST /api/bureaux/ai-search` | bâtiment, statut, type, capacité/étage minimum |
+| Agents | `POST /api/agents/ai-search` | mot-clé (comparé à nom, prénom, matricule, département, fonction) |
+| Actifs | `POST /api/actifs/ai-search` | état (Neuf/Bon état/À réparer/Hors service) + mot-clé |
+
+Chaque requête est envoyée à un LLM via [OpenRouter](https://openrouter.ai/), qui la traduit en critères structurés à partir des données réelles du référentiel (liste des bâtiments/sites pour les bureaux) ; ces critères sont ensuite exécutés contre le référentiel existant. Si la clé API n'est pas configurée, si OpenRouter est injoignable, ou si le modèle répond quelque chose d'inexploitable, chaque recherche bascule automatiquement sur une recherche par mot-clé classique, et l'interface l'indique clairement (badge *"IA activée"* vs *"Repli mot-clé"*).
+
+#### Assistant IA (self-service Agent)
+
+Pour l'Agent, une **bulle de discussion flottante** (coin inférieur droit, visible sur toutes les pages de son espace — pas une page dédiée) permet de poser des questions en langage naturel sur son propre bureau, son matériel ou son historique (*"Quel est mon bureau actuel ?"*). Le backend (`POST /api/agents/me/chat`) récupère d'abord les données self-service réelles de l'agent (bureau, actifs, historique — via les mêmes requêtes que les pages "Mon bureau"/"Mes actifs"/"Mon historique") puis demande au LLM de répondre **uniquement** à partir de ces données, avec instruction explicite de ne jamais en inventer et de le dire clairement si la question n'y trouve pas de réponse — un agent ne peut donc jamais recevoir une réponse concernant les données d'un autre agent. En repli (IA indisponible), une réponse déterministe par mot-clé est construite à partir des mêmes données.
+
+#### Détection d'anomalies (journal d'audit)
+
+Sur la page **Journal d'audit** (Administrateur), le bouton **"Analyser les anomalies"** (`POST /api/audit-log/anomalies`) envoie les 300 dernières entrées du journal à un LLM pour repérer des schémas inhabituels (rafale d'actions par un même utilisateur, actions à des horaires atypiques). Contrairement aux deux fonctionnalités précédentes, le repli ici n'est **pas** un simple message d'indisponibilité : c'est une véritable heuristique basée sur des règles (implémentée directement en C#, sans IA) qui détecte les mêmes types de schémas par seuils fixes — la fonctionnalité reste donc utile même sans clé API configurée.
+
+#### Configuration
+
+Pour activer réellement l'appel au LLM sur les quatre fonctionnalités (sinon elles tournent toutes en mode repli, sans erreur) :
 
 ```bash
 cd GestionEspaces
@@ -87,7 +107,19 @@ dotnet user-secrets set "OpenRouter:ApiKey" "sk-or-..." --project GestionEspaces
 
 Le modèle utilisé (`openai/gpt-4o-mini` par défaut) se change dans `appsettings.json` → `OpenRouter:Model`, avec n'importe quel identifiant de modèle disponible sur OpenRouter.
 
-**Architecture** — `IOfficeSearchAssistant` (interface, `Application`) / `OpenRouterOfficeSearchAssistant` (implémentation, `Infrastructure`, injectée via `IHttpClientFactory`) / `OfficeSearchAiUseCase` (orchestration + repli, `Application`). Aucune donnée n'est persistée par cette fonctionnalité — pas de nouvelle table, pas de migration.
+#### Architecture
+
+Chaque fonctionnalité suit le même triptyque, dans le même style que le reste du projet (interfaces dans `Application`, implémentations dans `Infrastructure`, orchestration + repli dans un use case `Application`) — sans abstraction générique partagée entre elles, par cohérence avec le reste de la base de code :
+
+| Fonctionnalité | Interface | Implémentation OpenRouter | Use case |
+|---|---|---|---|
+| Recherche bureaux | `IOfficeSearchAssistant` | `OpenRouterOfficeSearchAssistant` | `OfficeSearchAiUseCase` |
+| Recherche agents | `IAgentSearchAssistant` | `OpenRouterAgentSearchAssistant` | `AgentSearchAiUseCase` |
+| Recherche actifs | `IActifSearchAssistant` | `OpenRouterActifSearchAssistant` | `ActifSearchAiUseCase` |
+| Assistant self-service | `IAgentChatAssistant` | `OpenRouterAgentChatAssistant` | `AgentChatUseCase` |
+| Anomalies d'audit | `IAuditAnomalyAssistant` | `OpenRouterAuditAnomalyAssistant` | `AuditLogUseCases.AnalyzeAnomaliesAsync` |
+
+Toutes injectées via `IHttpClientFactory`. Aucune de ces fonctionnalités ne persiste de données — pas de nouvelle table, pas de migration.
 
 ---
 
@@ -102,6 +134,7 @@ Le projet a évolué en plusieurs étapes à partir d'une base Clean Architectur
 5. **Portabilité "clone & run"** — remplacement de la dépendance à une instance SQL Server locale nommée par un `docker-compose.yml` autonome, ajout d'un retry au démarrage pour tolérer une base encore en cours d'initialisation, et documentation complète (ce fichier).
 6. **Durcissement sécurité** — après audit du modèle d'authentification existant (jeton JWT unique de 8h, sans rafraîchissement ni révocation, aucune limitation de débit sur la connexion), ajout des jetons de rafraîchissement avec rotation, de la limitation de débit, et d'un journal d'audit basé sur des *domain events* pour tracer qui a fait quoi. Correction au passage des deux avertissements remontés par `dotnet build` (API de hachage obsolète, dépendance transitive vulnérable). Détail dans la section [Durcissement sécurité](#durcissement-sécurité) ci-dessus.
 7. **Recherche IA** *(branche `school-ai` uniquement)* — ajout d'une recherche de bureau en langage naturel via un LLM (OpenRouter), avec repli automatique sur une recherche par mot-clé si le service IA est indisponible, pour que la fonctionnalité ne devienne jamais un point de défaillance. Détail dans la section [Intelligence artificielle](#intelligence-artificielle) ci-dessus. Le reste du projet reste identique à la branche `main` (version stage).
+8. **Extension de l'IA à trois nouvelles fonctionnalités** *(branche `school-ai` uniquement)* — la recherche en langage naturel a été généralisée des bureaux aux agents et aux actifs (page à onglets) ; un assistant self-service conversationnel a été ajouté pour l'Agent, strictement ancré dans ses propres données pour ne jamais halluciner ni répondre au sujet d'un autre agent ; et une détection d'anomalies a été ajoutée au journal d'audit, avec un repli qui est cette fois une véritable heuristique par seuils plutôt qu'un simple message d'indisponibilité. L'assistant self-service a ensuite été repensé en bulle de discussion flottante, accessible depuis n'importe quelle page de l'espace Agent, plutôt qu'en page dédiée dans la navigation — pour rester joignable sans que l'agent perde le contexte de ce qu'il consultait.
 
 ---
 
