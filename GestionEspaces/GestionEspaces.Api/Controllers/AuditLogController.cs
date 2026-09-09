@@ -2,6 +2,7 @@ using GestionEspaces.Api.Common;
 using GestionEspaces.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GestionEspaces.Api.Controllers;
 
@@ -24,6 +25,17 @@ public sealed class AuditLogController : ControllerBase
     public async Task<IActionResult> SearchAsync([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await _auditLogUseCases.SearchAsync(pageNumber, pageSize, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    // AI-assisted anomaly detection over the recent audit trail — falls back to a rule-based
+    // heuristic (activity bursts, off-hours actions) when the assistant is unavailable.
+    [HttpPost("anomalies")]
+    [Authorize(Policy = "ReferentielAdmin")]
+    [EnableRateLimiting("AiSearchPolicy")]
+    public async Task<IActionResult> AnalyzeAnomaliesAsync(CancellationToken cancellationToken)
+    {
+        var result = await _auditLogUseCases.AnalyzeAnomaliesAsync(cancellationToken);
         return this.ToActionResult(result, Ok);
     }
 }

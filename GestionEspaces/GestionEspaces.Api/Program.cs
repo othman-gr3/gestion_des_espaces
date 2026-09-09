@@ -132,6 +132,22 @@ builder.Services.AddHttpClient<IOfficeSearchAssistant, OpenRouterOfficeSearchAss
 {
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddHttpClient<IAgentSearchAssistant, OpenRouterAgentSearchAssistant>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<IActifSearchAssistant, OpenRouterActifSearchAssistant>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<IAgentChatAssistant, OpenRouterAgentChatAssistant>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddHttpClient<IAuditAnomalyAssistant, OpenRouterAuditAnomalyAssistant>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

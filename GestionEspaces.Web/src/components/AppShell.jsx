@@ -66,6 +66,12 @@ const NAV_GROUPS = {
           { name: 'Mon profil', path: '/mon-profil' },
         ],
       },
+      {
+        label: 'Intelligence artificielle',
+        items: [
+          { name: 'Assistant IA', path: '/assistant-ia' },
+        ],
+      },
     ],
   },
 };

@@ -1,9 +1,11 @@
 using GestionEspaces.Api.Common;
 using GestionEspaces.Application.DTOs.Actifs;
+using GestionEspaces.Application.DTOs.AiSearch;
 using GestionEspaces.Application.UseCases;
 using GestionEspaces.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace GestionEspaces.Api.Controllers;
 
@@ -12,10 +14,22 @@ namespace GestionEspaces.Api.Controllers;
 public sealed class ActifsController : ControllerBase
 {
     private readonly ActifUseCases _actifUseCases;
+    private readonly ActifSearchAiUseCase _actifSearchAiUseCase;
 
-    public ActifsController(ActifUseCases actifUseCases)
+    public ActifsController(ActifUseCases actifUseCases, ActifSearchAiUseCase actifSearchAiUseCase)
     {
         _actifUseCases = actifUseCases;
+        _actifSearchAiUseCase = actifSearchAiUseCase;
+    }
+
+    // AI-assisted natural-language asset search — mirrors BureauxController's ai-search.
+    [HttpPost("ai-search")]
+    [Authorize(Policy = "ReferentielLecture")]
+    [EnableRateLimiting("AiSearchPolicy")]
+    public async Task<IActionResult> AiSearchAsync([FromBody] ActifSearchAiRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _actifSearchAiUseCase.ExecuteAsync(request.Query, cancellationToken);
+        return this.ToActionResult(result, Ok);
     }
 
     [HttpGet("{idActif:int}")]

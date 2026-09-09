@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import Breadcrumb from '../components/Breadcrumb';
 import Pagination from '../components/Pagination';
+import StatusBadge from '../components/StatusBadge';
 
 const EVENT_LABELS = {
   AgentAffecteAuBureauEvent: 'Affectation de poste créée',
@@ -31,7 +32,27 @@ const JournalAudit = () => {
   const [pageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [anomalies, setAnomalies] = useState(null);
+  const [anomaliesUsedAi, setAnomaliesUsedAi] = useState(false);
+  const [anomaliesEntriesAnalyzed, setAnomaliesEntriesAnalyzed] = useState(0);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [anomaliesError, setAnomaliesError] = useState('');
+
   useEffect(() => { fetchEntries(); }, [page]);
+
+  const analyzeAnomalies = async () => {
+    setAnalyzing(true);
+    setAnomaliesError('');
+    try {
+      const response = await api.post('/audit-log/anomalies');
+      setAnomalies(response.data.findings || []);
+      setAnomaliesUsedAi(!!response.data.usedAi);
+      setAnomaliesEntriesAnalyzed(response.data.entriesAnalyzed || 0);
+    } catch (err) {
+      console.error('Anomaly detection error:', err);
+      setAnomaliesError("L'analyse des anomalies a échoué.");
+    } finally { setAnalyzing(false); }
+  };
 
   const fetchEntries = async () => {
     setLoading(true);
@@ -50,9 +71,48 @@ const JournalAudit = () => {
     <div>
       <Breadcrumb items={[{ label: 'Sécurité' }, { label: "Journal d'audit" }]} />
 
-      <div className="mb-4 text-[12.5px] text-text-secondary">
-        Historique des événements métier significatifs (affectations, changements de statut de bureau) — qui a fait quoi, et quand.
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="text-[12.5px] text-text-secondary">
+          Historique des événements métier significatifs (affectations, changements de statut de bureau) — qui a fait quoi, et quand.
+        </div>
+        <button
+          type="button"
+          onClick={analyzeAnomalies}
+          disabled={analyzing}
+          className="bg-primary px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-white hover:bg-primary-dark transition-colors disabled:opacity-50 whitespace-nowrap"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {analyzing ? 'Analyse...' : 'Analyser les anomalies'}
+        </button>
       </div>
+
+      {anomaliesError && <div className="mb-4 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{anomaliesError}</div>}
+
+      {anomalies !== null && (
+        <div className="mb-6 border border-border-subtle bg-surface-bg p-4">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <div className="th-label">Résultat de l'analyse ({anomaliesEntriesAnalyzed} événement{anomaliesEntriesAnalyzed > 1 ? 's' : ''} examiné{anomaliesEntriesAnalyzed > 1 ? 's' : ''})</div>
+            <StatusBadge tone={anomaliesUsedAi ? 'success' : 'warning'}>{anomaliesUsedAi ? 'IA activée' : 'Heuristique locale'}</StatusBadge>
+          </div>
+          {anomalies.length === 0 ? (
+            <div className="text-[12.5px] text-text-secondary italic">Aucun événement à analyser.</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {anomalies.map((finding, i) => (
+                <div
+                  key={i}
+                  className={`px-3.5 py-2.5 text-[13px] border-l-[3px] ${
+                    finding.severity === 'warning' ? 'border-warning bg-warning/5' : 'border-accent bg-accent/5'
+                  }`}
+                >
+                  <div className="font-semibold text-text-primary">{finding.title}</div>
+                  <div className="mt-0.5 text-[12.5px] text-text-secondary">{finding.description}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {error && <div className="mb-4 border-l-[3px] border-danger bg-danger/5 px-4 py-3 text-[13px] font-medium text-danger">{error}</div>}
 

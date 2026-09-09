@@ -106,7 +106,8 @@ public sealed class AgentRepository : IAgentRepository
                 agent.Nom.Contains(filter) ||
                 agent.Prenom.Contains(filter) ||
                 agent.Matricule.Contains(filter) ||
-                (agent.Departement != null && agent.Departement.Contains(filter)));
+                (agent.Departement != null && agent.Departement.Contains(filter)) ||
+                (agent.Fonction != null && agent.Fonction.Contains(filter)));
         }
 
         return query;

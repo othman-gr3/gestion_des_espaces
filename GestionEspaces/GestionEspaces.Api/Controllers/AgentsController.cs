@@ -1,4 +1,6 @@
 using GestionEspaces.Api.Common;
+using GestionEspaces.Application.DTOs.AgentChat;
+using GestionEspaces.Application.DTOs.AiSearch;
 using GestionEspaces.Application.DTOs.Agents;
 using GestionEspaces.Application.DTOs.Assignments;
 using GestionEspaces.Application.DTOs.Demandes;
@@ -6,6 +8,7 @@ using GestionEspaces.Application.DTOs.SelfService;
 using GestionEspaces.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace GestionEspaces.Api.Controllers;
@@ -24,6 +27,8 @@ public sealed class AgentsController : ControllerBase
     private readonly CloseAffectationPosteUseCase _closePosteUseCase;
     private readonly CloseAffectationActifUseCase _closeActifUseCase;
     private readonly QueryAffectationsUseCase _queryAffectationsUseCase;
+    private readonly AgentSearchAiUseCase _agentSearchAiUseCase;
+    private readonly AgentChatUseCase _agentChatUseCase;
 
     public AgentsController(
         AgentUseCases agentUseCases,
@@ -32,7 +37,9 @@ public sealed class AgentsController : ControllerBase
         AssignAssetToAgentUseCase assignAssetToAgentUseCase,
         CloseAffectationPosteUseCase closePosteUseCase,
         CloseAffectationActifUseCase closeActifUseCase,
-        QueryAffectationsUseCase queryAffectationsUseCase)
+        QueryAffectationsUseCase queryAffectationsUseCase,
+        AgentSearchAiUseCase agentSearchAiUseCase,
+        AgentChatUseCase agentChatUseCase)
     {
         _agentUseCases = agentUseCases;
         _agentSelfServiceUseCase = agentSelfServiceUseCase;
@@ -41,6 +48,18 @@ public sealed class AgentsController : ControllerBase
         _closePosteUseCase = closePosteUseCase;
         _closeActifUseCase = closeActifUseCase;
         _queryAffectationsUseCase = queryAffectationsUseCase;
+        _agentSearchAiUseCase = agentSearchAiUseCase;
+        _agentChatUseCase = agentChatUseCase;
+    }
+
+    // AI-assisted natural-language agent search — mirrors BureauxController's ai-search.
+    [HttpPost("ai-search")]
+    [Authorize(Policy = "ReferentielLecture")]
+    [EnableRateLimiting("AiSearchPolicy")]
+    public async Task<IActionResult> AiSearchAsync([FromBody] AgentSearchAiRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _agentSearchAiUseCase.ExecuteAsync(request.Query, cancellationToken);
+        return this.ToActionResult(result, Ok);
     }
 
     // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -130,6 +149,21 @@ public sealed class AgentsController : ControllerBase
         }
 
         var result = await _agentSelfServiceUseCase.GetMyHistoryAsync(email, cancellationToken);
+        return this.ToActionResult(result, Ok);
+    }
+
+    [HttpPost("me/chat")]
+    [Authorize(Policy = "AccesAgent")]
+    [EnableRateLimiting("AiSearchPolicy")]
+    public async Task<IActionResult> ChatAsync([FromBody] AgentChatRequest request, CancellationToken cancellationToken)
+    {
+        var email = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _agentChatUseCase.ExecuteAsync(email, request.Message, cancellationToken);
         return this.ToActionResult(result, Ok);
     }
 

@@ -29,6 +29,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActifUseCases>();
         services.AddScoped<AuditLogUseCases>();
         services.AddScoped<OfficeSearchAiUseCase>();
+        services.AddScoped<AgentSearchAiUseCase>();
+        services.AddScoped<ActifSearchAiUseCase>();
+        services.AddScoped<AgentChatUseCase>();
         services.AddScoped<DemandeUseCases>();
 
         return services;
