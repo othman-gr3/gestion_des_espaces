@@ -26,7 +26,6 @@ import Demandes from './pages/Demandes';
 import JournalAudit from './pages/JournalAudit';
 import RechercheIA from './pages/RechercheIA';
 import Utilisateurs from './pages/Utilisateurs';
-import AssistantIA from './pages/AssistantIA';
 
 // Landing page at "/" — each role has a different home, since only
 // Administrateur can read the referentiel endpoints the Dashboard calls.
@@ -80,7 +79,6 @@ function App() {
             <Route path="mon-historique" element={<ProtectedRoute requiredRole="Agent"><MonHistorique /></ProtectedRoute>} />
             <Route path="mon-profil" element={<ProtectedRoute requiredRole="Agent"><MonProfil /></ProtectedRoute>} />
             <Route path="mes-demandes" element={<ProtectedRoute requiredRole="Agent"><MesDemandes /></ProtectedRoute>} />
-            <Route path="assistant-ia" element={<ProtectedRoute requiredRole="Agent"><AssistantIA /></ProtectedRoute>} />
           </Route>
         </Routes>
       </Router>

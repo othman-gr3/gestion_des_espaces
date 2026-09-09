@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import AssistantChatBubble from './AssistantChatBubble';
 
 const AFFECTATIONS_GROUP = {
   label: 'Affectations',
@@ -64,12 +65,6 @@ const NAV_GROUPS = {
           { name: 'Mon historique', path: '/mon-historique' },
           { name: 'Mes demandes', path: '/mes-demandes' },
           { name: 'Mon profil', path: '/mon-profil' },
-        ],
-      },
-      {
-        label: 'Intelligence artificielle',
-        items: [
-          { name: 'Assistant IA', path: '/assistant-ia' },
         ],
       },
     ],
@@ -213,6 +208,8 @@ const AppShell = () => {
           <Outlet />
         </main>
       </div>
+
+      {user?.role === 'Agent' && <AssistantChatBubble />}
     </div>
   );
 };
